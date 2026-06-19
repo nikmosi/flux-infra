@@ -20,6 +20,8 @@
     pkgs.nixfmt
     pkgs.kind
     pkgs.k9s
+    pkgs.age
+    pkgs.sops
   ];
 
   git-hooks.hooks = {
