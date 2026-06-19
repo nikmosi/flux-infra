@@ -22,8 +22,6 @@
     pkgs.k9s
   ];
 
-  dotenv.enable = true;
-
   git-hooks.hooks = {
     # core hygiene — нулевая стоимость, максимальная польза
     check-added-large-files.enable = true;
