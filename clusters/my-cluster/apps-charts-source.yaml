@@ -8,4 +8,6 @@ spec:
   interval: 1m0s
   ref:
     branch: main
+  secretRef:
+    name: apps-charts
   url: ssh://git@git.xinfra.ru/nikmosi/apps-charts.git
