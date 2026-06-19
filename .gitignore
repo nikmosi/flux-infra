@@ -9,3 +9,7 @@ devenv.local.yaml
 # pre-commit
 .pre-commit-config.yaml
 .env
+
+# Unencrypted secrets (only track *.enc.yaml)
+secrets/*.yaml
+!secrets/*.enc.yaml
