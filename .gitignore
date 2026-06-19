@@ -11,5 +11,5 @@ devenv.local.yaml
 .env
 
 # Unencrypted secrets (only track *.enc.yaml)
-secrets/*.yaml
-!secrets/*.enc.yaml
+**/secrets/*.yaml
+!**/secrets/*.enc.yaml

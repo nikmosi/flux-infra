@@ -38,11 +38,15 @@
 
     # format validation — по наличию файлов
     check-json.enable = true;
-    check-yaml.enable = true;
+    check-yaml = {
+      enable = true;
+      excludes = [ "^.*\\.enc\\.ya?ml$" ];
+    };
 
     # spell check
     typos = {
       enable = true;
+      excludes = [ "^.*\\.enc\\.ya?ml$" ];
       settings = { };
     };
 
@@ -54,7 +58,10 @@
     # YAML
     yamllint = {
       enable = true;
-      excludes = [ "^k8s/.*/templates/" ];
+      excludes = [
+        "^k8s/.*/templates/"
+        "^.*\\.enc\\.ya?ml$"
+      ];
       settings = {
         strict = true;
         configuration = ''
@@ -76,7 +83,10 @@
       name = "Kubernetes manifests";
       entry = "validate-kubernetes";
       files = "^k8s/.*\\.ya?ml$";
-      excludes = [ "^k8s/.*/templates/" ];
+      excludes = [
+        "^k8s/.*/templates/"
+        "^.*\\.enc\\.ya?ml$"
+      ];
       pass_filenames = true;
     };
 
@@ -93,6 +103,7 @@
       name = "Kustomize overlays";
       entry = "validate-kustomize";
       files = "^k8s/.*\\.ya?ml$";
+      excludes = [ "^.*\\.enc\\.ya?ml$" ];
       pass_filenames = false;
     };
 
@@ -151,7 +162,8 @@
       else
         mapfile -d "" -t files < <(
           find k8s -type f \( -name '*.yaml' -o -name '*.yml' \) \
-            ! -path '*/templates/*' -print0 | sort -z
+            ! -path '*/templates/*' \
+            ! -name '*.enc.yaml' ! -name '*.enc.yml' -print0 | sort -z
         )
       fi
 
