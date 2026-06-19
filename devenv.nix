@@ -16,7 +16,7 @@
     pkgs.kubernetes-validate
     pkgs.yamllint
     pkgs.yq-go
-    pkgs.flux
+    pkgs.fluxcd
     pkgs.nixfmt
     pkgs.kind
     pkgs.k9s
