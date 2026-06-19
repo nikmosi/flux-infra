@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://git.xinfra.ru/nikmosi/flux-infra.git
+  url: ssh://git@git.xinfra.ru/nikmosi/flux-infra.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
