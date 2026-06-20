@@ -6,3 +6,4 @@ resources:
 - 02-sources.yaml
 - 03-releases.yaml
 - 04-apps.yaml
+- capacitor.yaml
