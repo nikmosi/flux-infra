@@ -1,0 +1,71 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    env:
+      - name: TZ
+        value: Asia/Novosibirsk
+    ports:
+      websecure:
+        transport:
+          respondingTimeouts:
+            readTimeout: 10m
+            writeTimeout: 10m
+      forgejo-ssh:
+        port: 8022
+        expose:
+          default: true
+        exposedPort: 22
+        protocol: TCP
+      mail-smtp:
+        port: 25
+        expose:
+          default: true
+        exposedPort: 25
+        protocol: TCP
+      mail-smtps:
+        port: 465
+        expose:
+          default: true
+        exposedPort: 465
+        protocol: TCP
+      mail-submission:
+        port: 587
+        expose:
+          default: true
+        exposedPort: 587
+        protocol: TCP
+      mail-imap:
+        port: 143
+        expose:
+          default: true
+        exposedPort: 143
+        protocol: TCP
+      mail-imaps:
+        port: 993
+        expose:
+          default: true
+        exposedPort: 993
+        protocol: TCP
+      mail-pop3:
+        port: 110
+        expose:
+          default: true
+        exposedPort: 110
+        protocol: TCP
+      mail-pop3s:
+        port: 995
+        expose:
+          default: true
+        exposedPort: 995
+        protocol: TCP
+      mail-sieve:
+        port: 4190
+        expose:
+          default: true
+        exposedPort: 4190
+        protocol: TCP

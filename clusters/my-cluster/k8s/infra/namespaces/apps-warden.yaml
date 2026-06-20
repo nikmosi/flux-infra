@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps-warden
+  labels:
+    name: apps-warden
+    app.kubernetes.io/part-of: local-kube

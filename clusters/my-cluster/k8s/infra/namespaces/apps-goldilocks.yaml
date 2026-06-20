@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps-goldilocks
+  labels:
+    name: apps-goldilocks
+    app.kubernetes.io/part-of: local-kube
