@@ -14,6 +14,7 @@ clusters/my-cluster/
 │   └── traefik/                        # RKE2 HelmChartConfig
 ├── sources/                            # Source CRDs (HelmRepository, GitRepository, OCIRepository)
 ├── releases/                           # HelmRelease CRDs
+│   └── apps/                           # HelmRelease приложений (authelia и т.д.)
 ├── kustomizations/                     # Flux Kustomization CRD с ordering
 └── secrets/                            # SOPS-encrypted secrets
 ```
@@ -22,8 +23,10 @@ clusters/my-cluster/
 
 1. `infrastructure` — namespaces, cert-manager CRDs, traefik
 2. `sources` — HelmRepository, GitRepository, OCIRepository
-3. `releases` — HelmRelease (cert-manager, reflector и др.)
+3. `releases` — HelmRelease (cert-manager, reflector)
    depends_on: infrastructure, sources
+4. `apps` — HelmRelease приложений (authelia)
+   depends_on: infrastructure, releases
 
 ## Добавление нового HelmRelease
 
