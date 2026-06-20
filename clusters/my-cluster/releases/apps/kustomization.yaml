@@ -6,3 +6,5 @@ resources:
 - crowdsec.yaml
 - vikunja.yaml
 - vaultwarden.yaml
+- adguard.yaml
+- dozzle.yaml
