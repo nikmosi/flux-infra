@@ -14,9 +14,7 @@ spec:
         name: emberstack
         namespace: flux-system
       interval: 1h
-  install:
-    namespace: reflector
-    createNamespace: true
+  createNamespace: true
   targetNamespace: reflector
   values:
     replicaCount: 1

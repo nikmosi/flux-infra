@@ -14,9 +14,6 @@ spec:
         name: jetstack
         namespace: flux-system
       interval: 1h
-  install:
-    namespace: cert-manager
-    createNamespace: false
   targetNamespace: cert-manager
   values:
     crds:
