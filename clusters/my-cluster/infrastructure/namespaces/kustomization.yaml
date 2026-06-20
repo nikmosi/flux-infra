@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
 - apps-adguard.yaml
 - apps-authelia.yaml
-- apps-capacitor.yaml
 - apps-docs.yaml
 - apps-forgejo.yaml
 - apps-goldilocks.yaml
