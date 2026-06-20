@@ -1,0 +1,39 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: flux-system
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: cert-manager
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: flux-system
+      interval: 1h
+  install:
+    namespace: cert-manager
+    createNamespace: false
+  targetNamespace: cert-manager
+  values:
+    crds:
+      enabled: true
+
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk
+      - name: GODEBUG
+        value: http2client=0
+
+    cainjector:
+      extraEnv:
+        - name: TZ
+          value: Asia/Novosibirsk
+
+    webhook:
+      extraEnv:
+        - name: TZ
+          value: Asia/Novosibirsk
