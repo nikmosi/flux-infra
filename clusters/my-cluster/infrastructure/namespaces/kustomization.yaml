@@ -24,3 +24,5 @@ resources:
 - gitlab-runner.yaml
 - monitoring.yaml
 - trivy-system.yaml
+- vpa.yaml
+- goldilocks-middleware.yaml

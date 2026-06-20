@@ -1,0 +1,56 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: goldilocks
+  namespace: flux-system
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: goldilocks
+      sourceRef:
+        kind: HelmRepository
+        name: fairwinds
+        namespace: flux-system
+      interval: 1h
+  releaseName: goldilocks
+  targetNamespace: apps-goldilocks
+  values:
+    image:
+      repository: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks
+      tag: v4.14.1
+      pullPolicy: Always
+
+    controller:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 100Mi
+        limits:
+          memory: 192Mi
+
+    dashboard:
+      enabled: true
+      replicaCount: 2
+      resources:
+        requests:
+          cpu: 15m
+          memory: 100Mi
+        limits:
+          memory: 192Mi
+      ingress:
+        enabled: true
+        ingressClassName: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: apps-goldilocks-authentik-forward-auth@kubernetescrd
+        hosts:
+          - host: goldilocks.xinfra.ru
+            paths:
+              - path: /
+                type: Prefix
+        tls:
+          - hosts:
+              - goldilocks.xinfra.ru
+            secretName: wildcard-xinfra-ru-tls
+      excludeContainers: linkerd-proxy,istio-proxy

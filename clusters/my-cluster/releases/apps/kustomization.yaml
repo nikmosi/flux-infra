@@ -13,3 +13,6 @@ resources:
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml
+- goldilocks.yaml
+- ntfy.yaml
+- vpa.yaml
