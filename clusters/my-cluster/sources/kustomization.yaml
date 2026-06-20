@@ -9,3 +9,4 @@ resources:
 - crowdsec-helm.yaml
 - vikunja-helm.yaml
 - vaultwarden-helm.yaml
+- kube-prometheus-stack-helm.yaml

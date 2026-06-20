@@ -8,10 +8,10 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: k8s/apps/kube-prometheus-stack
+      chart: kube-prometheus-stack
       sourceRef:
-        kind: GitRepository
-        name: apps-charts
+        kind: HelmRepository
+        name: kube-prometheus-stack
         namespace: flux-system
       interval: 1h
   releaseName: kube-prometheus-stack
