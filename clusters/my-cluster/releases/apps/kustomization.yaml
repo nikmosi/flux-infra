@@ -9,3 +9,4 @@ resources:
 - adguard.yaml
 - dozzle.yaml
 - forgejo.yaml
+- kube-prometheus-stack.yaml
