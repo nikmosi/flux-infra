@@ -6,6 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
+  releaseName: cert-manager
   chart:
     spec:
       chart: k8s/charts/cert-manager

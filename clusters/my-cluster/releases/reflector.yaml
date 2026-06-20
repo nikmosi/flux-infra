@@ -6,6 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
+  releaseName: reflector
   chart:
     spec:
       chart: reflector
