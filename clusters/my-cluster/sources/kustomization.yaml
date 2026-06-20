@@ -4,3 +4,4 @@ resources:
 - apps-charts-source.yaml
 - capacitor-source.yaml
 - emberstack-helm.yaml
+- project-zot-helm.yaml
