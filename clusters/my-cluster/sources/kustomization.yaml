@@ -5,3 +5,4 @@ resources:
 - capacitor-source.yaml
 - emberstack-helm.yaml
 - project-zot-helm.yaml
+- crowdsec-helm.yaml

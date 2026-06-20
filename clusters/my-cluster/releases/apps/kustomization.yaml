@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - authelia.yaml
 - zot.yaml
+- crowdsec.yaml
