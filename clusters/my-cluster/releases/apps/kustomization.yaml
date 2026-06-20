@@ -12,3 +12,4 @@ resources:
 - forgejo.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
+- locust.yaml
