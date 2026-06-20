@@ -3,6 +3,4 @@ kind: Kustomization
 resources:
 - apps-charts-source.yaml
 - capacitor-source.yaml
-- jetstack-helm.yaml
 - emberstack-helm.yaml
-- authelia-helm.yaml
