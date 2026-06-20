@@ -6,3 +6,4 @@ resources:
 - emberstack-helm.yaml
 - project-zot-helm.yaml
 - crowdsec-helm.yaml
+- vikunja-helm.yaml

@@ -4,3 +4,4 @@ resources:
 - authelia.yaml
 - zot.yaml
 - crowdsec.yaml
+- vikunja.yaml
