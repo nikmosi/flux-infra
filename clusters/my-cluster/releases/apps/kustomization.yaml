@@ -8,3 +8,4 @@ resources:
 - vaultwarden.yaml
 - adguard.yaml
 - dozzle.yaml
+- forgejo.yaml
