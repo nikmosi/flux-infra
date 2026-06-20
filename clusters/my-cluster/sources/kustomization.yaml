@@ -7,3 +7,4 @@ resources:
 - project-zot-helm.yaml
 - crowdsec-helm.yaml
 - vikunja-helm.yaml
+- vaultwarden-helm.yaml
