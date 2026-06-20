@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: flux-web-ui
+  namespace: flux-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`flux.xinfra.ru`)
+      kind: Rule
+      middlewares:
+        - name: forwardauth-authelia
+          namespace: apps-authelia
+      services:
+        - name: flux-operator
+          port: 9080
+  tls:
+    secretName: wildcard-xinfra-ru-tls

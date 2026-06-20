@@ -5,3 +5,4 @@ resources:
 - namespaces/
 - cert-manager/
 - traefik/overlays/
+- flux-operator-ingress.yaml
