@@ -15,4 +15,4 @@ spec:
         namespace: flux-system
       interval: 1h
   releaseName: dozzle
-  targetNamespace: apps-dozzle
+  targetNamespace: monitoring
