@@ -11,3 +11,4 @@ resources:
 - dozzle.yaml
 - forgejo.yaml
 - kube-prometheus-stack.yaml
+- lldap.yaml
