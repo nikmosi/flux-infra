@@ -6,6 +6,12 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
   chart:
     spec:
       chart: k8s/charts/goldilocks
@@ -43,7 +49,7 @@ spec:
         enabled: true
         ingressClassName: traefik
         annotations:
-          traefik.ingress.kubernetes.io/router.middlewares: apps-goldilocks-authentik-forward-auth@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: apps-goldilocks-authelia-forward-auth@kubernetescrd
         hosts:
           - host: goldilocks.xinfra.ru
             paths:
