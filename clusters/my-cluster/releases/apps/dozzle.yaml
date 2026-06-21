@@ -22,7 +22,4 @@ spec:
       interval: 1h
   releaseName: dozzle
   targetNamespace: monitoring
-  values:
-    extraEnv:
-      - name: TZ
-        value: Asia/Novosibirsk
+  values: {}
