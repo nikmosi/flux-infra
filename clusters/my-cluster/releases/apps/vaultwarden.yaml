@@ -374,15 +374,15 @@ spec:
       ## @param adminToken.existingSecret Specify an existing Kubernetes secret containing the admin token. Also set adminToken.existingSecretKey.
       ## Example: admincreds_secret
       ##
-      existingSecret: ""
+      existingSecret: "vaultwarden"
       ## @param adminToken.existingSecretKey When using adminToken.existingSecret, specify the key containing the token.
       ## Example: ADMIN_TOKEN
       ##
-      existingSecretKey: ""
+      existingSecretKey: "admin-token"
       ## @param adminToken.value Plain or argon2 string containing the admin token.
       ## This example is the argon2 has of "R@ndomTokenString" (no quotes).
       ##
-      value: "$argon2id$v=19$m=65540,t=3,p=4$gfgh1ykZHdlYaG8m8Q6J4S4x/Xl7kiq6R8W5WvYs6+8$ZtArVzMPO5i2EkdVkp0nNLNWxC0WJvkHXjgREOLWcxw"
+      value: ""
 
     ## @param adminRateLimitSeconds Number of seconds, on average, between admin login requests from the same IP address before rate limiting kicks in.
     ##
@@ -561,7 +561,7 @@ spec:
       enabled: true
       ## @param sso.existingSecret Name of an existing secret containing the OpenID Connect client id and secret. Also set sso.clientId.existingSecretKey and sso.clientSecret.existingSecretKey.
       ##
-      existingSecret: ""
+      existingSecret: "vaultwarden"
       ## @param sso.onlySSO boolean to disable the email+master-password login flow.
       ##
       onlySSO: true
@@ -606,16 +606,16 @@ spec:
       clientId:
         ## @param sso.clientId.value string for the client id of the OpenID Connect authentication.
         ##
-        value: "GF5EXFDkYc1wzKOVEZXI4LHAOevsPz7J7g1ag95Y"
+        value: ""
         ## @param sso.clientId.existingSecretKey When using an existing secret, specify the key which contains the password.
         ##
-        existingSecretKey: ""
+        existingSecretKey: "sso-client-id"
       ## Client ID for OpenID Connect authentication.
       ##
       clientSecret:
         ## @param sso.clientSecret.value string for the client id of the OpenID Connect authentication.
         ##
-        value: "2NXgQJppwSFyptbWyXfCM4EZh2PBDeIrYK6Xibt7J2nFDMOxka4jSfhPaLBwp4H8e1L3ILbaIDMJ1QrY72EMItwcFrglDRH8mIhnWA4kpLqNphivfXi9hq2YWtfwp3wg"
+        value: ""
         ## @param sso.clientSecret.existingSecretKey When using an existing secret, specify the key which contains the password.
         ##
-        existingSecretKey: ""
+        existingSecretKey: "sso-client-secret"
