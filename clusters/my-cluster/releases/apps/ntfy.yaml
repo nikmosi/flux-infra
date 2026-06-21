@@ -22,3 +22,7 @@ spec:
       interval: 1h
   releaseName: ntfy
   targetNamespace: apps-ntfy
+  values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk

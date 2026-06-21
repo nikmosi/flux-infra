@@ -22,3 +22,7 @@ spec:
       interval: 1h
   releaseName: vpa
   targetNamespace: vpa
+  values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk

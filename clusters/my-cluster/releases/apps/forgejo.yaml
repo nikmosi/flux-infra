@@ -22,3 +22,7 @@ spec:
       interval: 1h
   releaseName: forgejo
   targetNamespace: apps-forgejo
+  values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk

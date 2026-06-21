@@ -90,6 +90,8 @@ spec:
       enabled: true
       replicas: 1
       env:
+        - name: TZ
+          value: Asia/Novosibirsk
         - name: ENROLL_KEY
           valueFrom:
             secretKeyRef:
@@ -142,6 +144,8 @@ spec:
             type: containerd
             program: traefik
       env:
+        - name: TZ
+          value: Asia/Novosibirsk
         - name: COLLECTIONS
           value: crowdsecurity/traefik
       hostVarLog: true

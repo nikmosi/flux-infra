@@ -29,6 +29,9 @@ spec:
       pullPolicy: Always
 
     controller:
+      extraEnv:
+        - name: TZ
+          value: Asia/Novosibirsk
       resources:
         requests:
           cpu: 15m
@@ -39,6 +42,9 @@ spec:
     dashboard:
       enabled: true
       replicaCount: 2
+      extraEnv:
+        - name: TZ
+          value: Asia/Novosibirsk
       resources:
         requests:
           cpu: 15m

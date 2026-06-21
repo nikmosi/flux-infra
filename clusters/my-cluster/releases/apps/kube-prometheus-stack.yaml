@@ -570,6 +570,8 @@ spec:
                     - python
                     - /app/adapter.py
                   env:
+                    - name: TZ
+                      value: Asia/Novosibirsk
                     - name: NTFY_URL
                       value: http://ntfy.apps-ntfy.svc.cluster.local/
                     - name: NTFY_TOPIC

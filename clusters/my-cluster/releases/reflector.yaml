@@ -25,6 +25,10 @@ spec:
   values:
     replicaCount: 1
 
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk
+
     configuration:
       logging:
         minimumLevel: Information

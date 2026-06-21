@@ -22,3 +22,7 @@ spec:
       interval: 1h
   releaseName: adguard
   targetNamespace: apps-adguard
+  values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk

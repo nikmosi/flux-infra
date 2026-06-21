@@ -22,3 +22,7 @@ spec:
       interval: 1h
   releaseName: locust
   targetNamespace: apps-noise
+  values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk
