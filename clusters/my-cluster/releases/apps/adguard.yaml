@@ -22,4 +22,7 @@ spec:
       interval: 1h
   releaseName: adguard
   targetNamespace: apps-adguard
-  values: {}
+  values:
+    auth:
+      enabled: true
+      existingSecret: adguard-admin-creds
