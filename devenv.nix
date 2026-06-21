@@ -22,6 +22,8 @@
     pkgs.k9s
     pkgs.age
     pkgs.sops
+    pkgs.kube-score
+    pkgs.trivy
   ];
 
   git-hooks.hooks = {
@@ -105,6 +107,15 @@
       files = "^k8s/.*\\.ya?ml$";
       excludes = [ "^.*\\.enc\\.ya?ml$" ];
       pass_filenames = false;
+    };
+
+    # security scoring — pre-push только
+    kube-score = {
+      enable = true;
+      name = "kube-score";
+      entry = "validate-kube-score";
+      pass_filenames = false;
+      stages = [ "pre-push" ];
     };
 
     # heavy — pre-push только
@@ -233,18 +244,77 @@
       set -euo pipefail
       cd "$DEVENV_ROOT"
 
+      # 1. Build and validate Flux Kustomizations (flux build kustomization equivalent)
+      flux_kustomizations=0
+      while IFS= read -r -d "" file; do
+        kind=$(yq eval '.kind // ""' "$file")
+        api=$(yq eval '.apiVersion // ""' "$file")
+        if [[ "$kind" == Kustomization && "$api" == kustomize.toolkit.fluxcd.io/* ]]; then
+          path=$(yq eval '.spec.path // ""' "$file")
+          if [[ -n "$path" ]]; then
+            full_path="$DEVENV_ROOT/$path"
+            if [[ -d "$full_path" ]]; then
+              echo "==> flux build kustomization: $path"
+              kustomize build "$full_path" | validate-rendered
+              flux_kustomizations=$((flux_kustomizations + 1))
+            fi
+          fi
+        fi
+      done < <(
+        grep -rlZ 'kustomize\.toolkit\.fluxcd\.io' k8s --include='*.yaml' --include='*.yml' || true
+      )
+      echo "Validated $flux_kustomizations Flux Kustomization(s)."
+
+      # 2. Validate individual Flux CRD files
       mapfile -d "" -t files < <(
         grep -rlZ \
           -E '^(apiVersion: (source|kustomize|helm|notification|image)\.toolkit\.fluxcd\.io/|kind: (GitRepository|OCIRepository|Bucket|Kustomization|HelmRelease|Alert|Provider|Receiver|ImageRepository|ImagePolicy|ImageUpdateAutomation)$)' \
           k8s --include='*.yaml' --include='*.yml' || true
       )
 
-      if (( ''${#files[@]} == 0 )); then
-        echo "No Flux resources to validate."
+      if (( ''${#files[@]} > 0 )); then
+        validate-kubernetes "''${files[@]}"
+      fi
+    '';
+
+    validate-kube-score.exec = ''
+      set -euo pipefail
+      cd "$DEVENV_ROOT"
+
+      tmp="$(mktemp)"
+      trap 'rm -f "$tmp"' EXIT
+
+      mapfile -d "" -t files < <(
+        find k8s -type f \( -name '*.yaml' -o -name '*.yml' \) \
+          ! -path '*/templates/*' \
+          ! -name '*.enc.yaml' ! -name '*.enc.yml' -print0 | sort -z
+      )
+
+      resources=0
+      for file in "''${files[@]}"; do
+        [[ -f "$file" ]] || continue
+        rendered="$(yq eval-all \
+          'select(tag == "!!map" and has("apiVersion") and has("kind"))' \
+          "$file")"
+        if [[ -n "$rendered" ]]; then
+          printf '%s\n---\n' "$rendered" >> "$tmp"
+          resources=$((resources + 1))
+        fi
+      done
+
+      if (( resources == 0 )); then
+        echo "No manifests to score."
         exit 0
       fi
 
-      validate-kubernetes "''${files[@]}"
+      kube-score score "$tmp" --output-format ci
+    '';
+
+    scan-iac.exec = ''
+      set -euo pipefail
+      cd "$DEVENV_ROOT"
+
+      trivy config --severity HIGH,CRITICAL k8s/
     '';
   };
 }
