@@ -1,0 +1,99 @@
+# Flux GitOps — my-cluster
+
+GitOps-репозиторий для Kubernetes-кластера `my-cluster` на `xinfra.ru`.
+Управляется через FluxCD v2 с SOPS-шифрованием секретов (age).
+
+## Dev-окружение (devenv)
+
+Вход: `devenv shell`
+Провалидировать всё: `validate-flux && validate-kube-score && scan-iac && scan-secrets`
+Nix-конфигурация: `devenv.nix` + `devenv.yaml` + `devenv.lock`
+
+Пакеты: git, nushell, trufflehog, kubectl, kubernetes-helm, kustomize, kubeconform, kubernetes-validate, yamllint, yq-go, fluxcd, nixfmt, kind, k9s, age, sops, kube-score, trivy
+
+## Структура
+
+```
+clusters/my-cluster/
+├── flux-system/            # Bootstrap FluxInstance (НЕ редактировать)
+├── infrastructure/         # Namespaces, cert-manager, traefik
+│   ├── namespaces/         # 25 namespace YAML
+│   ├── cert-manager/       # ClusterIssuer + wildcard Certificate
+│   └── traefik/overlays/   # Forgejo SSH, mail ports
+├── sources/                # HelmRepository, GitRepository (7 источников)
+├── releases/               # HelmRelease CRD (cert-manager, reflector)
+│   └── apps/               # 14 HelmRelease приложений
+├── kustomizations/         # Flux Kustomization CRD с ordering 01→04
+└── secrets/                # 34 SOPS-encrypted *.enc.yaml
+```
+
+## Порядок применения Kustomization
+
+| № | Имя | Path | depends_on |
+|---|-----|------|------------|
+| 01 | infrastructure | `./clusters/my-cluster/infrastructure` | — |
+| 02 | sources | `./clusters/my-cluster/sources` | — |
+| 03 | releases | `./clusters/my-cluster/releases` | 01, 02 |
+| 04 | apps | `./clusters/my-cluster/releases/apps` | 01, 03 |
+
+Все Kustomization CRD: `interval: 10m`, `prune: true`, `wait: true`, SOPS decryption.
+
+## API-версии
+
+- `source.toolkit.fluxcd.io/v1beta2` — HelmRepository, GitRepository
+- `kustomize.toolkit.fluxcd.io/v1beta2` — Flux Kustomization
+- `helm.toolkit.fluxcd.io/v2` — HelmRelease
+- `fluxcd.controlplane.io/v1` — FluxInstance (bootstrap, flux-operator)
+
+## Валидационные скрипты (доступны в devenv shell)
+
+| Команда | Что делает |
+|---------|-----------|
+| `validate-flux` | Находит Flux CRD → `kustomize build` каждого Kustomization + `kubeconform` + `kubernetes-validate` |
+| `validate-kubernetes` | Все plain YAML манифесты → `kubeconform` + `kubernetes-validate` |
+| `validate-helm` | `helm lint --strict` + `helm template` → валидация |
+| `validate-kustomize` | `kustomize build` на каждом kustomization.yaml → валидация |
+| `validate-kube-score` | `kube-score score --output-format ci` по всем plain манифестам |
+| `scan-secrets` | `trufflehog multi-scan` |
+| `scan-iac` | `trivy config --severity HIGH,CRITICAL k8s/` |
+
+## Pre-commit hooks (все, кроме pre-push)
+
+- core: large files, case conflicts, merge conflicts, symlinks, EOF, BOM, line endings, trailing whitespace, private keys
+- format: json, yaml (exclude *.enc.y*ml)
+- spell: typos (exclude *.enc.y*ml)
+- nix: nixfmt, statix, deadnix
+- yaml: yamllint strict (disable comments-indentation, document-start, indentation, line-length, truthy)
+- k8s: kubernetes-manifests (validate-kubernetes at commit)
+- helm: validate-helm at commit (pass_filenames=false)
+- kustomize: validate-kustomize at commit (pass_filenames=false)
+- pre-push only: kube-score (validate-kube-score), trufflehog
+
+## Конвенции
+
+- Секреты: SOPS age encrypt → `secrets/*.enc.yaml` (`.gitignore` не пускает unencrypted)
+- Новый HelmRelease: добавить источник в `sources/`, release в `releases/` или `releases/apps/`, секреты в `secrets/` с `.enc.yaml`
+- `*.enc.yaml` исключены из всех валидационных хуков
+- `*/templates/*` исключены из проверок plain манифестов
+- Монолитная структура — все ресурсы в `clusters/my-cluster/`, поддиректории с kustomization.yaml
+
+## Известные проблемы (см. todo.md)
+
+- CRITICAL: plaintext secrets в authelia.yaml, vaultwarden.yaml — нужно SOPS
+- HIGH: goldilocks middleware authentik → authelia; crowdsec privileged initContainer; force: true отсутствует в 01, 02; retries нет на HelmRelease install/upgrade
+- LOW: orphan namespaces (trivy-system, apps-* и др.) без HelmRelease; NetworkPolicy отсутствуют
+- Open: является ли `trivy-system` запланированным?
+
+## Ключевые файлы
+
+- `devenv.nix` — dev shell + hooks + scripts (сердце проекта)
+- `.sops.yaml` — конфиг SOPS (encrypt data/stringData)
+- `todo.md` — code review findings с приоритетами
+- `.clinerules` — этот файл (база знаний для ИИ-агента)
+- `.pre-commit-config.yaml` — generated from devenv (gitignored)
+
+## Язык
+
+- Комментарии в коде: русский (де-факто)
+- YAML манифесты: английский
+- commit messages: предпочтительно английский

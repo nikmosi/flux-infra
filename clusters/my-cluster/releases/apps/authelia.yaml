@@ -90,6 +90,8 @@ spec:
               path: users_database.yml
         authelia-core:
           path: authelia-core
+        authelia-reset-password:
+          path: authelia-reset-password
         authelia-oidc:
           path: authelia-oidc
 
@@ -157,7 +159,8 @@ spec:
           jwt_lifespan: 5 minutes
           jwt_algorithm: HS256
           secret:
-            value: c0558b00c31b86ffae1ce03065db83f998a844d3cdf817a7d9844381869107eb
+            secret_name: authelia-reset-password
+            path: identity_validation.reset_password.jwt.hmac.key
         elevated_session:
           code_lifespan: 5 minutes
           elevation_lifespan: 10 minutes
