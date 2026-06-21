@@ -5,6 +5,11 @@ metadata:
   name: zot
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: authelia
+      namespace: flux-system
+    - name: lldap
+      namespace: flux-system
   interval: 5m
   install:
     remediation:

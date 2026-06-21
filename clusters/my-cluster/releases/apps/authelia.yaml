@@ -5,6 +5,9 @@ metadata:
   name: authelia
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: lldap
+      namespace: flux-system
   interval: 5m
   install:
     remediation:
