@@ -4,5 +4,6 @@ kind: Kustomization
 resources:
 - namespaces/
 - cert-manager/
+- storage/
 - traefik/overlays/
 - flux-operator-ingress.yaml
