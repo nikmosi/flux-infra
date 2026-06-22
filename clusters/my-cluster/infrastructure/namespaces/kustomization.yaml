@@ -6,6 +6,7 @@ resources:
 - apps-authelia.yaml
 - apps-docs.yaml
 - apps-forgejo.yaml
+- apps-gickup.yaml
 - apps-goldilocks.yaml
 - apps-kube-prometheus-stack.yaml
 - apps-lldap.yaml
