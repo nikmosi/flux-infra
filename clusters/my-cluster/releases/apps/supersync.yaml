@@ -1,0 +1,96 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: supersync
+  namespace: flux-system
+spec:
+  interval: 5m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: k8s/apps/supersync
+      sourceRef:
+        kind: GitRepository
+        name: apps-charts
+        namespace: flux-system
+      interval: 1h
+  releaseName: supersync
+  targetNamespace: apps-supersync
+  values:
+    replicaCount: 1
+
+    image:
+      repository: iari/supersync
+      pullPolicy: IfNotPresent
+      tag: ""
+
+    ingress:
+      enabled: true
+      className: ""
+      annotations: {}
+      hosts:
+        - host: sync.xinfra.ru
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: wildcard-xinfra-ru-tls
+          hosts:
+            - sync.xinfra.ru
+
+    config:
+      host: "0.0.0.0"
+      publicUrl: "https://sync.xinfra.ru"
+      corsEnabled: true
+      corsOrigins: "https://app.super-productivity.com,https://*.super-productivity-preview.pages.dev"
+      runMigrationsOnStartup: false
+      webauthnRpName: "Super Productivity Sync"
+
+    secret:
+      jwtSecret: ""
+      databaseUrl: ""
+      smtpUser: ""
+      smtpPass: ""
+      existingSecret: "supersync-secret"
+
+    persistence:
+      enabled: true
+      storageClassName: local-path
+      accessModes:
+        - ReadWriteOnce
+      size: 1Gi
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 768Mi
+
+    extraEnv:
+      - name: TZ
+        value: "Asia/Novosibirsk"
+
+    postgresql:
+      enabled: true
+      auth:
+        username: supersync
+        database: supersync
+        existingSecret: "supersync-secret"
+      primary:
+        persistence:
+          enabled: true
+          storageClass: local-path
+          size: 8Gi
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            memory: 1Gi

@@ -17,3 +17,4 @@ resources:
 - goldilocks.yaml
 - ntfy.yaml
 - vpa.yaml
+- supersync.yaml
