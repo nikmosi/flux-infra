@@ -7,3 +7,4 @@ resources:
 - 03-releases.yaml
 - 04-apps.yaml
 - 05-secrets.yaml
+- 06-cert-manager-configs.yaml
