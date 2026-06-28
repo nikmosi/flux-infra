@@ -4,27 +4,27 @@ kind: Kustomization
 resources:
 - apps-adguard.yaml
 - apps-authelia.yaml
-- apps-docs.yaml
+# - apps-docs.yaml
 - apps-forgejo.yaml
 - apps-gickup.yaml
 - apps-goldilocks.yaml
 - apps-kube-prometheus-stack.yaml
 - apps-lldap.yaml
-- apps-mailu.yaml
-- apps-mealie.yaml
+# - apps-mailu.yaml
+# - apps-mealie.yaml
 - apps-noise.yaml
 - apps-ntfy.yaml
-- apps-twitch-sub-bot.yaml
+# - apps-twitch-sub-bot.yaml
 - apps-vikunja.yaml
 - apps-warden.yaml
-- apps-zipline.yaml
+# - apps-zipline.yaml
 - apps-zot.yaml
 - cert-manager.yaml
 - reflector.yaml
 - crowdsec.yaml
-- gitlab-runner.yaml
+# - gitlab-runner.yaml
 - monitoring.yaml
-- trivy-system.yaml
+# - trivy-system.yaml
 - vpa.yaml
 - goldilocks-middleware.yaml
 - apps-supersync.yaml

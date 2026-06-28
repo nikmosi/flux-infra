@@ -61,7 +61,7 @@
     yamllint = {
       enable = true;
       excludes = [
-        "^k8s/.*/templates/"
+        "^clusters/.*/templates/"
         "^.*\\.enc\\.ya?ml$"
       ];
       settings = {
@@ -84,9 +84,9 @@
       enable = true;
       name = "Kubernetes manifests";
       entry = "validate-kubernetes";
-      files = "^k8s/.*\\.ya?ml$";
+      files = "^clusters/.*\\.ya?ml$";
       excludes = [
-        "^k8s/.*/templates/"
+        "^clusters/.*/templates/"
         "^.*\\.enc\\.ya?ml$"
       ];
       pass_filenames = true;
@@ -96,7 +96,7 @@
       enable = true;
       name = "Helm charts";
       entry = "validate-helm";
-      files = "^k8s/.*/(Chart\\.yaml|Chart\\.lock|values.*\\.yaml|values\\.schema\\.json|templates/.*)$";
+      files = "^clusters/.*/(Chart\\.yaml|Chart\\.lock|values.*\\.yaml|values\\.schema\\.json|templates/.*)$";
       pass_filenames = false;
     };
 
@@ -104,7 +104,7 @@
       enable = true;
       name = "Kustomize overlays";
       entry = "validate-kustomize";
-      files = "^k8s/.*\\.ya?ml$";
+      files = "^clusters/.*\\.ya?ml$";
       excludes = [ "^.*\\.enc\\.ya?ml$" ];
       pass_filenames = false;
     };
@@ -172,7 +172,7 @@
         files=("$@")
       else
         mapfile -d "" -t files < <(
-          find k8s -type f \( -name '*.yaml' -o -name '*.yml' \) \
+          find clusters -type f \( -name '*.yaml' -o -name '*.yml' \) \
             ! -path '*/templates/*' \
             ! -name '*.enc.yaml' ! -name '*.enc.yml' -print0 | sort -z
         )
@@ -205,7 +205,7 @@
       set -euo pipefail
       cd "$DEVENV_ROOT"
 
-      mapfile -t charts < <(find k8s -name Chart.yaml -print | sort)
+      mapfile -t charts < <(find clusters -name Chart.yaml -print | sort)
 
       for chart in "''${charts[@]}"; do
         directory="''${chart%/Chart.yaml}"
@@ -223,7 +223,7 @@
       cd "$DEVENV_ROOT"
 
       mapfile -d "" -t files < <(
-        find k8s -type f \
+        find clusters -type f \
           \( -name kustomization.yaml -o -name kustomization.yml -o -name Kustomization \) \
           -print0 | sort -z
       )
@@ -254,14 +254,18 @@
           if [[ -n "$path" ]]; then
             full_path="$DEVENV_ROOT/$path"
             if [[ -d "$full_path" ]]; then
-              echo "==> flux build kustomization: $path"
-              kustomize build "$full_path" | validate-rendered
-              flux_kustomizations=$((flux_kustomizations + 1))
+              if [[ -f "$full_path/kustomization.yaml" || -f "$full_path/kustomization.yml" || -f "$full_path/Kustomization" ]]; then
+                echo "==> flux build kustomization: $path"
+                kustomize build "$full_path" | validate-rendered
+                flux_kustomizations=$((flux_kustomizations + 1))
+              else
+                echo "==> flux build kustomization: $path (skipped, no kustomization file)"
+              fi
             fi
           fi
         fi
       done < <(
-        grep -rlZ 'kustomize\.toolkit\.fluxcd\.io' k8s --include='*.yaml' --include='*.yml' || true
+        grep -rlZ 'kustomize\.toolkit\.fluxcd\.io' clusters --include='*.yaml' --include='*.yml' || true
       )
       echo "Validated $flux_kustomizations Flux Kustomization(s)."
 
@@ -269,7 +273,7 @@
       mapfile -d "" -t files < <(
         grep -rlZ \
           -E '^(apiVersion: (source|kustomize|helm|notification|image)\.toolkit\.fluxcd\.io/|kind: (GitRepository|OCIRepository|Bucket|Kustomization|HelmRelease|Alert|Provider|Receiver|ImageRepository|ImagePolicy|ImageUpdateAutomation)$)' \
-          k8s --include='*.yaml' --include='*.yml' || true
+          clusters --include='*.yaml' --include='*.yml' || true
       )
 
       if (( ''${#files[@]} > 0 )); then
@@ -285,7 +289,7 @@
       trap 'rm -f "$tmp"' EXIT
 
       mapfile -d "" -t files < <(
-        find k8s -type f \( -name '*.yaml' -o -name '*.yml' \) \
+        find clusters -type f \( -name '*.yaml' -o -name '*.yml' \) \
           ! -path '*/templates/*' \
           ! -name '*.enc.yaml' ! -name '*.enc.yml' -print0 | sort -z
       )
@@ -314,7 +318,7 @@
       set -euo pipefail
       cd "$DEVENV_ROOT"
 
-      trivy config --severity HIGH,CRITICAL k8s/
+      trivy config --severity HIGH,CRITICAL clusters/
     '';
   };
 }

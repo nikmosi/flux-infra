@@ -6,9 +6,6 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infrastructure
-    - name: releases
-    - name: secrets
     - name: cert-manager-configs
   interval: 10m0s
   path: ./clusters/my-cluster/releases/apps
