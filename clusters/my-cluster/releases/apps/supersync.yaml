@@ -48,8 +48,9 @@ spec:
       host: "0.0.0.0"
       publicUrl: "https://sync.xinfra.ru"
       corsEnabled: true
+      webauthnRpId: sync.xinfra.ru
+      webauthnOrigin: https://sync.xinfra.ru
       corsOrigins: "https://app.super-productivity.com,https://*.super-productivity-preview.pages.dev"
-      runMigrationsOnStartup: false
       webauthnRpName: "Super Productivity Sync"
 
     secret:
