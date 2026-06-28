@@ -27,3 +27,4 @@ resources:
 - trivy-system.yaml
 - vpa.yaml
 - goldilocks-middleware.yaml
+- apps-supersync.yaml
