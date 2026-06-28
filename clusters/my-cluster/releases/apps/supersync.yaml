@@ -5,6 +5,7 @@ metadata:
   name: supersync
   namespace: apps-supersync
 spec:
+  suspend: true
   interval: 5m
   install:
     remediation:
