@@ -28,7 +28,7 @@ spec:
 
     image:
       repository: iari/supersync
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
       tag: "latest"
 
     ingress:

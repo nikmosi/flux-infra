@@ -31,7 +31,7 @@ spec:
     image:
       registry: ghcr.io
       repository: authelia/authelia
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
 
     rbac:
       enabled: true

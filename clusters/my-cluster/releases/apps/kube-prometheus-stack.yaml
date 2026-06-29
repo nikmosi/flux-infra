@@ -565,7 +565,7 @@ spec:
               containers:
                 - name: adapter
                   image: python:3.13-alpine
-                  imagePullPolicy: IfNotPresent
+                  imagePullPolicy: Always
                   command:
                     - python
                     - /app/adapter.py
