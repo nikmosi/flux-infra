@@ -253,11 +253,15 @@ spec:
     prometheus-node-exporter:
       releaseLabel: true
       hostPID: true
+      hostPort: ""
+      image:
+        pullPolicy: Always
       resources:
         requests:
           cpu: 25m
           memory: 64Mi
         limits:
+          cpu: 100m
           memory: 128Mi
 
     prometheusOperator:
