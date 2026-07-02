@@ -25,6 +25,7 @@ spec:
   values:
     vikunja:
       image:
+        pullPolicy: Always
         tag: "2.3.0"
       env:
         TZ: Asia/Novosibirsk

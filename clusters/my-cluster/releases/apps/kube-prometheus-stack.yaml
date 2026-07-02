@@ -252,6 +252,7 @@ spec:
 
     prometheus-node-exporter:
       releaseLabel: true
+      hostPID: true
       resources:
         requests:
           cpu: 25m
