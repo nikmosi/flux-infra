@@ -24,3 +24,5 @@ spec:
   targetNamespace: apps-gickup
   values:
     existingSecret: gickup-secrets
+    image:
+      pullPolicy: Always
