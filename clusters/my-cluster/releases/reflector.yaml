@@ -25,6 +25,9 @@ spec:
   values:
     replicaCount: 1
 
+    image:
+      pullPolicy: Always
+
     extraEnv:
       - name: TZ
         value: Asia/Novosibirsk
