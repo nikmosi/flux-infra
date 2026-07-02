@@ -22,4 +22,6 @@ spec:
       interval: 1h
   releaseName: ntfy
   targetNamespace: apps-ntfy
-  values: {}
+  values:
+    image:
+      pullPolicy: Always
