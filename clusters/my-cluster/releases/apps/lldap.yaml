@@ -23,6 +23,11 @@ spec:
   releaseName: lldap
   targetNamespace: apps-lldap
   values:
+    lldap:
+      image:
+        pullPolicy: Always
+    image:
+      pullPolicy: Always
     extraEnv:
       - name: TZ
         value: Asia/Novosibirsk
