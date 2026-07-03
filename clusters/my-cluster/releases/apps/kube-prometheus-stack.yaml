@@ -97,11 +97,14 @@ spec:
       alertmanagerSpec:
         replicas: 1
         retention: 120h
+        image:
+          pullPolicy: Always
         resources:
           requests:
             cpu: 25m
             memory: 128Mi
           limits:
+            cpu: 250m
             memory: 256Mi
         storage:
           volumeClaimTemplate:
@@ -119,6 +122,10 @@ spec:
       defaultDashboardsTimezone: Asia/Novosibirsk
 
       adminUser: admin
+      image:
+        pullPolicy: Always
+      containerSecurityContext:
+        readOnlyRootFilesystem: true
       envValueFrom:
         GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
           secretKeyRef:
@@ -201,12 +208,47 @@ spec:
             uid: alertmanager
             handleGrafanaManagedAlerts: false
             implementation: prometheus
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 472
+        readinessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - test -d /proc/1
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - test -d /proc/1
+          initialDelaySeconds: 10
+          periodSeconds: 30
 
       resources:
         requests:
           cpu: 50m
           memory: 448Mi
         limits:
+          cpu: 200m
           memory: 768Mi
 
     kubeApiServer:
@@ -240,11 +282,14 @@ spec:
 
     kube-state-metrics:
       releaseLabel: true
+      image:
+        pullPolicy: Always
       resources:
         requests:
           cpu: 25m
           memory: 64Mi
         limits:
+          cpu: 100m
           memory: 128Mi
 
     nodeExporter:
@@ -270,12 +315,24 @@ spec:
         enabled: true
         patch:
           enabled: true
+      image:
+        pullPolicy: Always
       resources:
         requests:
           cpu: 50m
           memory: 128Mi
         limits:
+          cpu: 100m
           memory: 384Mi
+      prometheusConfigReloader:
+        enableProbe: true
+        resources:
+          requests:
+            cpu: 200m
+            memory: 50Mi
+          limits:
+            cpu: 200m
+            memory: 50Mi
 
     prometheus:
       enabled: true
@@ -287,6 +344,8 @@ spec:
         scrapeInterval: 60s
         scrapeTimeout: 10s
         evaluationInterval: 60s
+        image:
+          pullPolicy: Always
         # Retention is capped by both time and disk usage; whichever is hit first wins.
         retention: 90d
         retentionSize: 16GiB
@@ -317,6 +376,7 @@ spec:
             cpu: 100m
             memory: 512Mi
           limits:
+            cpu: 500m
             memory: 1536Mi
 
         storageSpec:
@@ -613,6 +673,7 @@ spec:
                       cpu: 5m
                       memory: 32Mi
                     limits:
+                      cpu: 50m
                       memory: 128Mi
                   securityContext:
                     allowPrivilegeEscalation: false
