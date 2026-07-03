@@ -22,6 +22,35 @@ spec:
       interval: 1h
   releaseName: goldilocks
   targetNamespace: apps-goldilocks
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: goldilocks-controller
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/livenessProbe
+                value:
+                  exec:
+                    command:
+                      - /goldilocks
+                      - --help
+                  initialDelaySeconds: 5
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              - op: add
+                path: /spec/template/spec/containers/0/readinessProbe
+                value:
+                  exec:
+                    command:
+                      - /goldilocks
+                      - --help
+                  initialDelaySeconds: 3
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
   values:
     image:
       repository: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks
@@ -66,3 +95,18 @@ spec:
               - goldilocks.xinfra.ru
             secretName: wildcard-xinfra-ru-tls
       excludeContainers: linkerd-proxy,istio-proxy
+
+    vpa:
+      enabled: true
+      updater:
+        enabled: false
+      admissionController:
+        resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+      recommender:
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1000Mi
