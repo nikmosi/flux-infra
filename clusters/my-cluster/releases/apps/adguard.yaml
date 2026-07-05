@@ -35,9 +35,10 @@ spec:
     bootstrapEnabled: true
 
     image:
-      tag: "v0.107.43"  # last version with schema 12 / bool edns_client_subnet; AGH will self-migrate on restart
+      tag: "v0.107.43" # last version with schema 12 / bool edns_client_subnet; AGH will self-migrate on restart
 
     bootstrapConfig:
+      clients: []
       bind_host: "0.0.0.0"
       bind_port: 80
 
@@ -56,9 +57,13 @@ spec:
       log_localtime: false
       verbose: false
       web_session_ttl: 720
-      schema_version: 12
+      schema_version: 28
 
       dns:
+        edns_client_subnet:
+          custom_ip: ""
+          enabled: false
+          use_custom: false
         bind_hosts:
           - "0.0.0.0"
         port: 53
