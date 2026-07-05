@@ -96,6 +96,8 @@ spec:
     lapi:
       enabled: true
       replicas: 1
+      storeCAPICredentialsInSecret: true
+      storeLAPICscliCredentialsInSecret: true
       env:
         - name: TZ
           value: Asia/Novosibirsk
@@ -121,9 +123,7 @@ spec:
           storageClassName: local-path
           size: 1Gi
         config:
-          enabled: true
-          storageClassName: local-path
-          size: 100Mi
+          enabled: false
       resources:
         requests:
           cpu: 100m
