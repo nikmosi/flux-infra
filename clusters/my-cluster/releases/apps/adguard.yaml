@@ -34,6 +34,9 @@ spec:
   values:
     bootstrapEnabled: true
 
+    image:
+      tag: "v0.107.43"  # last version with schema 12 / bool edns_client_subnet; AGH will self-migrate on restart
+
     bootstrapConfig:
       bind_host: "0.0.0.0"
       bind_port: 80
@@ -53,9 +56,7 @@ spec:
       log_localtime: false
       verbose: false
       web_session_ttl: 720
-      # Override chart defaults incompatible with AGH v0.107.51:
-      # schema_version is set by AGH itself on first run
-      schema_version: 0
+      schema_version: 12
 
       dns:
         bind_hosts:
@@ -108,11 +109,6 @@ spec:
         # включаем DNSSEC
         enable_dnssec: true
         max_goroutines: 300
-        # edns_client_subnet is a struct in AGH v0.107.51, not a bool
-        edns_client_subnet:
-          enabled: false
-          use_custom: false
-          custom_ip: ""
         ipset: []
         filtering_enabled: true
         filters_update_interval: 24
