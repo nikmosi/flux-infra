@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: vaultwarden
-  namespace: flux-system
+  namespace: apps-warden
 spec:
   interval: 5m
   install:

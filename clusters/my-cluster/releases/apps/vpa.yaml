@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: vpa
-  namespace: flux-system
+  namespace: vpa
 spec:
   interval: 5m
   install:
