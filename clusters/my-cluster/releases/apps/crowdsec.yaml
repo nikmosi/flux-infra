@@ -60,11 +60,6 @@ spec:
                 - "172.16.0.0/12"
                 - "192.168.0.0/16"
 
-      console.yaml: |
-        share_manual_decisions: true
-        share_tainted: true
-        share_custom: true
-
       notifications:
         http.yaml: |
           type: http
