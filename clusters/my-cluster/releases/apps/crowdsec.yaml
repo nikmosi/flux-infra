@@ -124,6 +124,8 @@ spec:
           size: 1Gi
         config:
           enabled: false
+      startupProbe:
+        failureThreshold: 90
       resources:
         requests:
           cpu: 100m
