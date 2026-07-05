@@ -9,6 +9,19 @@ spec:
     env:
       - name: TZ
         value: Asia/Novosibirsk
+    experimental:
+      plugins:
+        crowdsec-bouncer:
+          moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+          version: v1.3.5
+    additionalVolumes:
+      - name: crowdsec-bouncer-key
+        secret:
+          secretName: crowdsec-bouncer-key
+    volumeMounts:
+      - name: crowdsec-bouncer-key
+        mountPath: /etc/crowdsec-bouncer-key
+        readOnly: true
     ports:
       websecure:
         transport:
