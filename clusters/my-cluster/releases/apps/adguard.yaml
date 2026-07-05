@@ -14,18 +14,223 @@ spec:
       retries: 3
   chart:
     spec:
-      chart: k8s/apps/adguard
+      chart: adguard-home
+      version: "0.24.1"
       sourceRef:
-        kind: GitRepository
-        name: apps-charts
+        kind: HelmRepository
+        name: rm3l
         namespace: flux-system
       interval: 1h
   releaseName: adguard
   targetNamespace: apps-adguard
+
+  # Inject bcrypt password hash from SOPS-encrypted secret into bootstrapConfig.users
+  valuesFrom:
+    - kind: Secret
+      name: adguard-admin-creds
+      valuesKey: password_hash
+      targetPath: bootstrapConfig.users[0].password
+
   values:
-    auth:
+    bootstrapEnabled: true
+
+    bootstrapConfig:
+      bind_host: "0.0.0.0"
+      bind_port: 80
+
+      users:
+        - name: nikmosi
+          # overridden via valuesFrom from secret
+          password: ""
+
+      http_proxy: ""
+      language: "en"
+      log_file: ""
+      log_max_backups: 0
+      log_max_size: 100
+      log_max_age: 3
+      log_compress: false
+      log_localtime: false
+      verbose: false
+      web_session_ttl: 720
+      schema_version: 12
+
+      dns:
+        bind_hosts:
+          - "0.0.0.0"
+        port: 53
+        statistics_interval: 90
+        querylog_enabled: true
+        querylog_file_enabled: true
+        querylog_interval: "168h"
+        querylog_size_memory: 1000
+        anonymize_client_ip: false
+        protection_enabled: true
+        blocking_mode: "default"
+        blocking_ipv4: ""
+        blocking_ipv6: ""
+        blocked_response_ttl: 10
+        parental_block_host: "family-block.dns.adguard.com"
+        safebrowsing_block_host: "standard-block.dns.adguard.com"
+        ratelimit: 20
+        ratelimit_whitelist: []
+        refuse_any: true
+        upstream_dns:
+          - "https://dns.cloudflare.com/dns-query"
+          - "tls://1dot1dot1dot1.cloudflare-dns.com"
+          - "https://dns10.quad9.net/dns-query"
+        upstream_dns_file: ""
+        bootstrap_dns:
+          - "1.1.1.1"
+          - "1.0.0.1"
+          - "9.9.9.10"
+          - "149.112.112.10"
+        all_servers: true
+        fastest_addr: false
+        fastest_timeout: "1s"
+        allowed_clients: []
+        disallowed_clients: []
+        blocked_hosts:
+          - "version.bind"
+          - "id.server"
+          - "hostname.bind"
+        trusted_proxies:
+          - "127.0.0.0/8"
+          - "::1/128"
+        cache_size: 4194304
+        cache_ttl_min: 0
+        cache_ttl_max: 0
+        cache_optimistic: true
+        bogus_nxdomain: []
+        aaaa_disabled: false
+        # включаем DNSSEC
+        enable_dnssec: true
+        edns_client_subnet: false
+        max_goroutines: 300
+        handle_ddr: true
+        ipset: []
+        ipset_file: ""
+        filtering_enabled: true
+        filters_update_interval: 24
+        parental_enabled: false
+        safesearch_enabled: false
+        safebrowsing_enabled: false
+        safebrowsing_cache_size: 1048576
+        safesearch_cache_size: 1048576
+        parental_cache_size: 1048576
+        cache_time: 30
+        rewrites: []
+        blocked_services: []
+        upstream_timeout: "10s"
+        private_networks: []
+        use_private_ptr_resolvers: true
+        local_domain_name: "lan"
+        resolve_clients: true
+        local_ptr_upstreams: []
+
+      filters:
+        - enabled: true
+          url: "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt"
+          name: "AdGuard DNS filter"
+          id: 1
+        - enabled: true
+          url: "https://adaway.org/hosts.txt"
+          name: "AdAway Default Blocklist"
+          id: 2
+        - enabled: true
+          url: "https://abp.oisd.nl/basic/"
+          name: "OISD Blocklist Basic"
+          id: 1641249002
+
+      whitelist_filters: []
+      user_rules: []
+
+      dhcp:
+        enabled: false
+        interface_name: ""
+        local_domain_name: "lan"
+        dhcpv4:
+          gateway_ip: ""
+          subnet_mask: ""
+          range_start: ""
+          range_end: ""
+          lease_duration: 86400
+          icmp_timeout_msec: 1000
+          options: []
+        dhcpv6:
+          range_start: ""
+          lease_duration: 86400
+          ra_slaac_only: false
+          ra_allow_slaac: false
+
+      clients:
+        runtime_sources:
+          whois: true
+          arp: true
+          rdns: true
+          dhcp: true
+          hosts: true
+        persistent: []
+
+      tls:
+        # TLS терминируется на Traefik
+        enabled: false
+        allow_unencrypted_doh: true
+
+      os:
+        group: ""
+        rlimit_nofile: 0
+        user: ""
+
+    persistence:
       enabled: true
-      existingSecret: adguard-admin-creds
-    ingress:
-      annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
+      volumeClaimSpec:
+        storageClassName: local-path
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
+
+    services:
+      dns:
+        enabled: true
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+      dnsOverTls:
+        enabled: false
+      dnsOverQuic:
+        enabled: false
+      dnscrypt:
+        enabled: false
+      http:
+        type: ClusterIP
+        port: 80
+      https:
+        enabled: false
+
+    ingresses:
+      http:
+        enabled: true
+        className: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
+        hosts:
+          - host: adguard.xinfra.ru
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - secretName: wildcard-xinfra-ru-tls
+            hosts:
+              - adguard.xinfra.ru
+
+      https:
+        enabled: false

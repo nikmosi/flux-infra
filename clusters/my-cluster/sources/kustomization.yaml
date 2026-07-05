@@ -10,3 +10,4 @@ resources:
 - vaultwarden-helm.yaml
 - kube-prometheus-stack-helm.yaml
 - mailu-helm.yaml
+- rm3l-adguard-home-helm.yaml
