@@ -1,0 +1,55 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crowdsec-register-traefik-bouncer
+  namespace: crowdsec
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: register-bouncer
+              image: crowdsecurity/crowdsec:v1.7.8
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -ec
+                - |
+                  cp /cscli/lapi_cscli_credentials.yaml /etc/crowdsec/local_api_credentials.yaml
+                  sed -i \
+                    -e 's#http://127.0.0.1:8080#http://crowdsec-service.crowdsec.svc.cluster.local:8080#' \
+                    -e 's#http://localhost:8080#http://crowdsec-service.crowdsec.svc.cluster.local:8080#' \
+                    /etc/crowdsec/local_api_credentials.yaml
+
+                  key="$(cat /bouncer/bouncer_key)"
+                  cscli bouncers delete traefik --ignore-missing
+                  cscli bouncers add traefik -k "$key" >/dev/null
+                  cscli bouncers inspect traefik
+              volumeMounts:
+                - name: cscli-credentials
+                  mountPath: /cscli
+                  readOnly: true
+                - name: bouncer-key
+                  mountPath: /bouncer
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: cscli-credentials
+              secret:
+                secretName: crowdsec-lapi-cscli-credentials
+            - name: bouncer-key
+              secret:
+                secretName: crowdsec-bouncer-key

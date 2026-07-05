@@ -10,8 +10,6 @@ spec:
     - match: Host(`auth.xinfra.ru`) && PathPrefix(`/`)
       kind: Rule
       middlewares:
-        - name: crowdsec-bouncer
-          namespace: kube-system
         - name: chain-authelia
           namespace: apps-authelia
       priority: 500
