@@ -18,7 +18,6 @@ resources:
 - gickup.yaml
 - goldilocks.yaml
 - ntfy.yaml
-- vpa.yaml
 - supersync.yaml
 - mailu.yaml
 - mailu-ingressroute-tcp.yaml
