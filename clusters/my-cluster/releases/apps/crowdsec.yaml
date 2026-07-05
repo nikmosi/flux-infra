@@ -101,6 +101,12 @@ spec:
         - name: register-traefik-bouncer
           image: crowdsecurity/crowdsec:v1.7.8
           imagePullPolicy: IfNotPresent
+          env:
+            - name: REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: crowdsec-lapi-secrets
+                  key: registrationToken
           command:
             - sh
             - -ec
