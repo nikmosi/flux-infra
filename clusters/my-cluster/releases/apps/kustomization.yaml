@@ -7,7 +7,6 @@ resources:
 - zot.yaml
 - crowdsec.yaml
 - crowdsec-bouncer-middleware.yaml
-- crowdsec-bouncer-registration.yaml
 - vikunja.yaml
 - vaultwarden.yaml
 - adguard.yaml

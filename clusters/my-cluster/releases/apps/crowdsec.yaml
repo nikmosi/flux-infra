@@ -93,6 +93,35 @@ spec:
       replicas: 1
       storeCAPICredentialsInSecret: true
       storeLAPICscliCredentialsInSecret: true
+      extraVolumes:
+        - name: crowdsec-bouncer-key
+          secret:
+            secretName: crowdsec-bouncer-key
+      extraInitContainers:
+        - name: register-traefik-bouncer
+          image: crowdsecurity/crowdsec:v1.7.8
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -ec
+            - |
+              key="$(cat /etc/crowdsec-bouncer-key/bouncer_key)"
+              cscli bouncers delete traefik --ignore-missing
+              cscli bouncers add traefik -k "$key" >/dev/null
+              cscli bouncers inspect traefik
+          volumeMounts:
+            - name: crowdsec-db
+              mountPath: /var/lib/crowdsec/data
+              subPath: crowdsec
+            - name: crowdsec-lapi-cscli-credentials-volume
+              mountPath: /etc/crowdsec/local_api_credentials.yaml
+              subPath: lapi_cscli_credentials.yaml
+            - name: crowdsec-config-local-volume
+              mountPath: /etc/crowdsec/config.yaml.local
+              subPath: config.yaml.local
+            - name: crowdsec-bouncer-key
+              mountPath: /etc/crowdsec-bouncer-key
+              readOnly: true
       env:
         - name: TZ
           value: Asia/Novosibirsk
