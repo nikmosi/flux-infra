@@ -105,6 +105,7 @@ spec:
             - sh
             - -ec
             - |
+              cp -rn /staging/etc/crowdsec/* /etc/crowdsec/
               key="$(cat /etc/crowdsec-bouncer-key/bouncer_key)"
               cscli bouncers delete traefik --ignore-missing
               cscli bouncers add traefik -k "$key" >/dev/null
