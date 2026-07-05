@@ -7,9 +7,9 @@ metadata:
 spec:
   dependsOn:
     - name: authelia
-      namespace: flux-system
+      namespace: apps-authelia
     - name: lldap
-      namespace: flux-system
+      namespace: apps-lldap
   interval: 5m
   install:
     remediation:
