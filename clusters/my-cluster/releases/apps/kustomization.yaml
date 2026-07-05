@@ -5,6 +5,7 @@ resources:
 - authelia.yaml
 - zot.yaml
 - crowdsec.yaml
+- crowdsec-bouncer-middleware.yaml
 - vikunja.yaml
 - vaultwarden.yaml
 - adguard.yaml
