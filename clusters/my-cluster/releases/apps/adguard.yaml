@@ -53,7 +53,6 @@ spec:
       log_localtime: false
       verbose: false
       web_session_ttl: 720
-      schema_version: 12
 
       dns:
         bind_hosts:
@@ -105,11 +104,8 @@ spec:
         aaaa_disabled: false
         # включаем DNSSEC
         enable_dnssec: true
-        edns_client_subnet: false
         max_goroutines: 300
-        handle_ddr: true
         ipset: []
-        ipset_file: ""
         filtering_enabled: true
         filters_update_interval: 24
         parental_enabled: false
@@ -122,7 +118,6 @@ spec:
         rewrites: []
         blocked_services: []
         upstream_timeout: "10s"
-        private_networks: []
         use_private_ptr_resolvers: true
         local_domain_name: "lan"
         resolve_clients: true
@@ -145,6 +140,8 @@ spec:
       whitelist_filters: []
       user_rules: []
 
+      # clients: omitted — let AdGuard Home use defaults (avoids schema migration conflict)
+
       dhcp:
         enabled: false
         interface_name: ""
@@ -162,15 +159,6 @@ spec:
           lease_duration: 86400
           ra_slaac_only: false
           ra_allow_slaac: false
-
-      clients:
-        runtime_sources:
-          whois: true
-          arp: true
-          rdns: true
-          dhcp: true
-          hosts: true
-        persistent: []
 
       tls:
         # TLS терминируется на Traefik
