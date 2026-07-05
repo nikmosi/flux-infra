@@ -14,11 +14,12 @@ spec:
         crowdsec-bouncer:
           moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
           version: v1.3.5
-    additionalVolumes:
-      - name: crowdsec-bouncer-key
-        secret:
-          secretName: crowdsec-bouncer-key
-    volumeMounts:
+    deployment:
+      additionalVolumes:
+        - name: crowdsec-bouncer-key
+          secret:
+            secretName: crowdsec-bouncer-key
+    additionalVolumeMounts:
       - name: crowdsec-bouncer-key
         mountPath: /etc/crowdsec-bouncer-key
         readOnly: true
