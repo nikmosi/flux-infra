@@ -41,6 +41,8 @@ spec:
       tls: true
       existingSecret: "wildcard-xinfra-ru-tls"
       tlsFlavorOverride: "cert"
+      realIpHeader: X-Forwarded-For
+      realIpFrom: "10.42.0.0/16"
 
     front:
       hostPort:
