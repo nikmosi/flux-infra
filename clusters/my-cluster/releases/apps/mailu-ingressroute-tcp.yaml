@@ -89,3 +89,11 @@ spec:
       services:
         - name: mailu-front
           port: 995
+---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: mailu-transport
+  namespace: apps-mailu
+spec:
+  insecureSkipVerify: true

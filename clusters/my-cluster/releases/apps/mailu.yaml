@@ -57,6 +57,9 @@ spec:
       startupProbe:
         enabled: true
         failureThreshold: 30
+      service:
+        annotations:
+          traefik.ingress.kubernetes.io/service.serverstransport: mailu-transport@kubernetescrd
 
     admin:
       resources:
