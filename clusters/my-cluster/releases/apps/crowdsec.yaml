@@ -5,8 +5,9 @@ metadata:
   name: crowdsec
   namespace: flux-system
 spec:
-  suspend: true
+  suspend: false
   interval: 5m
+
   install:
     remediation:
       retries: 3
@@ -41,6 +42,11 @@ spec:
         on_success: break
 
       config.yaml.local: |
+        db_config:
+          flush:
+            agents_autodelete:
+              cert: 60m
+              login_password: 60m
         api:
           client:
             unregister_on_exit: true
@@ -165,4 +171,32 @@ spec:
           enabled: true
 
     appsec:
-      enabled: false
+      enabled: true
+      acquisitions:
+        - source: appsec
+          listen_addr: "0.0.0.0:7422"
+          path: /
+          appsec_config: crowdsecurity/crs-vpatch
+          labels:
+            type: appsec
+      configs:
+        mycustom-appsec-config.yaml: |
+          name: crowdsecurity/crs-vpatch
+          default_remediation: ban
+          #log_level: debug
+          outofband_rules:
+            - crowdsecurity/crs
+          inband_rules:
+            - crowdsecurity/base-config
+            - crowdsecurity/vpatch-*
+      env:
+        - name: COLLECTIONS
+          value: "crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-crs"
+        - name: TZ
+          value: Asia/Novosibirsk
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          memory: 256Mi
