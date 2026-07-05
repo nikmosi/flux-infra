@@ -34,7 +34,8 @@ spec:
     ingress:
       enabled: true
       className: ""
-      annotations: {}
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
       hosts:
         - host: sync.xinfra.ru
           paths:

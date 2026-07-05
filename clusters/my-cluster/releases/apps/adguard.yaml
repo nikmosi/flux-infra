@@ -26,3 +26,6 @@ spec:
     auth:
       enabled: true
       existingSecret: adguard-admin-creds
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd

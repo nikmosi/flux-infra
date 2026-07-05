@@ -55,6 +55,11 @@ spec:
         disableIngressRoute: false
         entryPoints:
           - websecure
+        chains:
+          ingressRoute:
+            before:
+              - name: crowdsec-bouncer
+                namespace: kube-system
         middlewares:
           auth:
             authResponseHeaders:
