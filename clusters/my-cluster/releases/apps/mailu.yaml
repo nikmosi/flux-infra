@@ -1,0 +1,151 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mailu
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cert-manager-configs
+  interval: 5m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: mailu
+      sourceRef:
+        kind: HelmRepository
+        name: mailu
+        namespace: flux-system
+      interval: 1h
+  releaseName: mailu
+  targetNamespace: apps-mailu
+  values:
+    global:
+      storageClass: "local-path"
+
+    hostnames:
+      - mail.xinfra.ru
+
+    domain: xinfra.ru
+
+    timezone: "Asia/Novosibirsk"
+
+    ingress:
+      enabled: true
+      ingressClassName: "traefik"
+      annotations:
+        traefik.ingress.kubernetes.io/service.serversscheme: http
+      tls: true
+      existingSecret: "wildcard-xinfra-ru-tls"
+      tlsFlavorOverride: "cert"
+
+    front:
+      hostPort:
+        enabled: false
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+      startupProbe:
+        enabled: true
+        failureThreshold: 30
+
+    admin:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 25m
+          memory: 64Mi
+      persistence:
+        storageClass: "local-path"
+
+    postfix:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      startupProbe:
+        enabled: true
+        failureThreshold: 30
+      persistence:
+        storageClass: "local-path"
+
+    dovecot:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      persistence:
+        storageClass: "local-path"
+
+    rspamd:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 128Mi
+      startupProbe:
+        enabled: true
+        failureThreshold: 90
+        timeoutSeconds: 5
+      persistence:
+        storageClass: "local-path"
+
+    clamav:
+      enabled: false
+
+    webmail:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 25m
+          memory: 64Mi
+      persistence:
+        storageClass: "local-path"
+
+    webdav:
+      enabled: false
+
+    fetchmail:
+      enabled: false
+
+    oletools:
+      enabled: false
+
+    tika:
+      enabled: false
+
+    persistence:
+      storageClass: "local-path"
+
+    redis:
+      master:
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 15m
+            memory: 32Mi
+        persistence:
+          storageClass: "local-path"

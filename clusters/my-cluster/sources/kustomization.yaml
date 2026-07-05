@@ -9,3 +9,4 @@ resources:
 - vikunja-helm.yaml
 - vaultwarden-helm.yaml
 - kube-prometheus-stack-helm.yaml
+- mailu-helm.yaml

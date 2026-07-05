@@ -18,3 +18,5 @@ resources:
 - ntfy.yaml
 - vpa.yaml
 - supersync.yaml
+- mailu.yaml
+- mailu-ingressroute-tcp.yaml
