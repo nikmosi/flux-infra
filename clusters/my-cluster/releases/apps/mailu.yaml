@@ -61,11 +61,14 @@ spec:
     admin:
       resources:
         limits:
-          cpu: 200m
-          memory: 256Mi
+          cpu: 1000m
+          memory: 1024Mi
         requests:
           cpu: 25m
           memory: 64Mi
+      startupProbe:
+        enabled: true
+        failureThreshold: 30
       persistence:
         storageClass: "local-path"
 
