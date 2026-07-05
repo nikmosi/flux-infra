@@ -52,14 +52,9 @@ spec:
         secret: wildcard-xinfra-ru-tls
       traefikCRD:
         enabled: true
-        disableIngressRoute: false
+        disableIngressRoute: true
         entryPoints:
           - websecure
-        chains:
-          ingressRoute:
-            before:
-              - name: crowdsec-bouncer
-                namespace: kube-system
         middlewares:
           auth:
             authResponseHeaders:
