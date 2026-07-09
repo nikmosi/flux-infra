@@ -27,3 +27,4 @@ resources:
 # - trivy-system.yaml
 - goldilocks-middleware.yaml
 - apps-supersync.yaml
+- apps-excalidraw.yaml

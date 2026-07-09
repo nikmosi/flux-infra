@@ -11,6 +11,7 @@ resources:
 - vaultwarden.yaml
 - adguard.yaml
 - dozzle.yaml
+- excalidraw.yaml
 - forgejo.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
