@@ -11,3 +11,4 @@ resources:
 - kube-prometheus-stack-helm.yaml
 - mailu-helm.yaml
 - rm3l-adguard-home-helm.yaml
+- excalidraw-helm.yaml
