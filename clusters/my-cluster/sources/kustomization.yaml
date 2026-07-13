@@ -12,3 +12,4 @@ resources:
 - mailu-helm.yaml
 - rm3l-adguard-home-helm.yaml
 - excalidraw-helm.yaml
+- longhorn-helm.yaml

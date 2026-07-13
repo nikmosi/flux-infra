@@ -29,3 +29,4 @@ resources:
 - apps-supersync.yaml
 - apps-excalidraw.yaml
 - excalidraw-middleware.yaml
+- longhorn-system.yaml

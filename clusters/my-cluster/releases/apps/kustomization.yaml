@@ -22,3 +22,4 @@ resources:
 - supersync.yaml
 - mailu.yaml
 - mailu-ingressroute-tcp.yaml
+- longhorn.yaml
