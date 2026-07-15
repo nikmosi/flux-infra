@@ -296,6 +296,9 @@ spec:
               - ntfy.xinfra.ru
             policy: one_factor
           - domain:
+              - longhorn.xinfra.ru
+            policy: two_factor
+          - domain:
               - "*.xinfra.ru"
             policy: two_factor
 
