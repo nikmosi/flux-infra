@@ -23,6 +23,12 @@ spec:
   releaseName: forgejo
   targetNamespace: apps-forgejo
   values:
+    forgejo:
+      persistence:
+        storageClass: "longhorn"
+    valkey:
+      persistence:
+        storageClassName: "longhorn"
     extraEnv:
       - name: TZ
         value: Asia/Novosibirsk
