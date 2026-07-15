@@ -102,6 +102,8 @@ spec:
 
     persistence:
       enabled: true
+      storageClass: longhorn
+      existingClaim: authelia
       size: 1Gi
       accessModes:
         - ReadWriteOnce
