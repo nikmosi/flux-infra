@@ -35,7 +35,7 @@ spec:
     bootstrapEnabled: true
 
     image:
-      tag: "v0.107.43" # last version with schema 12 / bool edns_client_subnet; AGH will self-migrate on restart
+      tag: "v0.107.43"
 
     bootstrapConfig:
       clients: []
@@ -182,7 +182,7 @@ spec:
     persistence:
       enabled: true
       volumeClaimSpec:
-        storageClassName: local-path
+        storageClassName: longhorn
         accessModes:
           - ReadWriteOnce
         resources:
