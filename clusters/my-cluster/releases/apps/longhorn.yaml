@@ -16,3 +16,7 @@ spec:
   interval: 1m0s
   releaseName: longhorn
   targetNamespace: longhorn-system
+  install:
+    timeout: 20m0s
+  upgrade:
+    timeout: 20m0s
