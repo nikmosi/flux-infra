@@ -48,6 +48,9 @@ spec:
           accessMode: ReadWriteOnce
           size: 10Gi
           mountPath: /app/vikunja/files
+          storageClass: "longhorn"
+        database:
+          storageClass: "longhorn"
       ingress:
         main:
           enabled: true
