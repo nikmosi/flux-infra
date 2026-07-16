@@ -54,8 +54,6 @@ spec:
       ingress:
         main:
           enabled: true
-          annotations:
-            traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
           hosts:
             - host: vikunja.xinfra.ru
               paths:

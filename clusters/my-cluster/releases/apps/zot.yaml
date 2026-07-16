@@ -61,8 +61,7 @@ spec:
     # Only enable this if you have security enabled on your cluster
     ingress:
       enabled: true
-      annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
+      annotations: {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
       # If using nginx, disable body limits and increase read and write timeouts

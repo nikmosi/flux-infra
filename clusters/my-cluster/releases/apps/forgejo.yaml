@@ -32,6 +32,4 @@ spec:
     extraEnv:
       - name: TZ
         value: Asia/Novosibirsk
-    ingress:
-      annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
+    ingress: {}

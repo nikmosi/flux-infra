@@ -38,7 +38,6 @@ spec:
       ingressClassName: "traefik"
       annotations:
         traefik.ingress.kubernetes.io/service.serversscheme: http
-        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
       tls: true
       existingSecret: "wildcard-xinfra-ru-tls"
       tlsFlavorOverride: "cert"

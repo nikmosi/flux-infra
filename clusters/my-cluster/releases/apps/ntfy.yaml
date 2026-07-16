@@ -27,6 +27,4 @@ spec:
       storageClassName: "longhorn"
     image:
       pullPolicy: Always
-    ingress:
-      annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd
+    ingress: {}

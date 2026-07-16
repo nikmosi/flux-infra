@@ -28,7 +28,7 @@ spec:
         enabled: true
         className: traefik
         annotations:
-          traefik.ingress.kubernetes.io/router.middlewares: kube-system-crowdsec-bouncer@kubernetescrd,apps-excalidraw-forwardauth-authelia@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: apps-excalidraw-forwardauth-authelia@kubernetescrd
         host: excalidraw.xinfra.ru
         path: /
         type: Prefix
