@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Миграция PVC с local-path (или иного SC) на longhorn.
+"""Миграция PVC на longhorn (в т.ч. longhorn -> longhorn с изменением размера).
 
 Интерактивная утилита для переноса данных одного PVC в новый PV с storageClassName
-longhorn с последующим возвратом оригинального имени PVC.
+longhorn с последующим возвратом оригинального имени PVC. Поддерживает миграцию
+с любого SC (включая сам longhorn) и изменение размера целевого PVC (shrink/grow).
 
 Перед запуском:
   1. Задайте namespace:  export NAMESPACE=...  (или --namespace)
   2. Выполните:  flux suspend helmrelease -n <ns> <release>
 
 После завершения:
-  1. Обновите storageClassName в HelmRelease в git на longhorn
+  1. Обновите storageClassName (и size, если меняли) в HelmRelease в git
   2. Закоммитьте и:  flux resume helmrelease -n <ns> <release>
 """
 
@@ -17,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -33,6 +35,9 @@ LONGHORN_SC = "longhorn"
 MIGRATOR_POD = "data-migrator"
 MIGRATOR_IMAGE = "alpine:latest"
 MIGRATOR_TIMEOUT_S = 1800  # 30 минут максимум на один PVC
+
+# Валидация размера PVC: <число><суффикс>, суффиксы k8s (Ki/Mi/Gi/Ti/Pi/Ei)
+_SIZE_RE = re.compile(r"^\d+(Ki|Mi|Gi|Ti|Pi|Ei)$")
 
 console = Console()
 
@@ -77,6 +82,23 @@ def log_cmd(args: list[str]) -> None:
     logger.debug(f"$ [bold]{cmd}[/bold]")
 
 
+def validate_size(size: str) -> bool:
+    """Проверяет, что строка является корректным размером k8s (например, 15Gi)."""
+    return bool(_SIZE_RE.match(size))
+
+
+def parse_size_gib(size: str) -> float | None:
+    """Парсит размер в Gi для сравнения. Возвращает None, если не удалось."""
+    m = _SIZE_RE.match(size)
+    if not m:
+        return None
+    value = int(m.group(0)[:-2])
+    suffix = size[-2:]
+    multipliers = {"Ki": 1 / (1024 * 1024), "Mi": 1 / 1024, "Gi": 1.0,
+                   "Ti": 1024.0, "Pi": 1024 * 1024.0, "Ei": 1024 ** 3}
+    return value * multipliers[suffix]
+
+
 # --------------------------------------------------------------------------- #
 #  Rich helpers
 # --------------------------------------------------------------------------- #
@@ -94,6 +116,8 @@ def print_summary(
     workload: str,
     wtype: str,
     pvc: str,
+    source_size: str,
+    target_size: str,
     dry_run: bool,
 ) -> None:
     table = Table(title="Сводка миграции", border_style="bold blue", show_header=True)
@@ -102,26 +126,46 @@ def print_summary(
     table.add_row("Namespace", namespace)
     table.add_row("Workload", f"{wtype}/{workload}")
     table.add_row("PVC", pvc)
+    table.add_row("Source Size", source_size)
+    if source_size != target_size:
+        table.add_row("Target Size", f"[bold yellow]{target_size}[/bold yellow]")
+    else:
+        table.add_row("Target Size", target_size)
     table.add_row("Target SC", f"[bold green]{LONGHORN_SC}[/bold green]")
     if dry_run:
         table.add_row("Режим", "[bold yellow]DRY-RUN[/bold yellow]")
     console.print(table)
 
 
-def print_final_instructions(ns: str, wtype: str) -> None:
+def print_final_instructions(
+    ns: str, wtype: str, source_size: str, target_size: str
+) -> None:
     lines = [
         "[bold green]Миграция PVC завершена.[/bold green]",
         "",
         "[bold]ДАЛЬНЕЙШИЕ ШАГИ (вручную):[/bold]",
         f"  1. Обновите [cyan]storageClassName[/cyan] в HelmRelease в git: "
         f"[bold]{LONGHORN_SC}[/bold]",
-        f"  2. Закоммитьте и: [bold]flux resume helmrelease -n {ns} <release>[/bold]",
-        f"  3. Проверьте: [dim]kubectl get pods -n {ns}[/dim]",
-        f"               [dim]kubectl get pvc -n {ns}[/dim]",
     ]
+    if source_size != target_size:
+        lines.append(
+            f"  [bold yellow]2. Измените [cyan]size[/cyan] в HelmRelease в git: "
+            f"[bold]{target_size}[/bold] (было: {source_size})[/bold yellow]"
+        )
+        lines.append(
+            f"  3. Закоммитьте и: [bold]flux resume helmrelease -n {ns} <release>[/bold]"
+        )
+        lines.append(f"  4. Проверьте: [dim]kubectl get pods -n {ns}[/dim]")
+        lines.append(f"               [dim]kubectl get pvc -n {ns}[/dim]")
+    else:
+        lines.append(
+            f"  2. Закоммитьте и: [bold]flux resume helmrelease -n {ns} <release>[/bold]"
+        )
+        lines.append(f"  3. Проверьте: [dim]kubectl get pods -n {ns}[/dim]")
+        lines.append(f"               [dim]kubectl get pvc -n {ns}[/dim]")
     if wtype == "statefulset":
         lines.append(
-            "  4. Для StatefulSet: обновите [cyan]volumeClaimTemplates[/cyan] в HelmRelease"
+            "  + Для StatefulSet: обновите [cyan]volumeClaimTemplates[/cyan] в HelmRelease"
         )
     console.print(Panel("\n".join(lines), border_style="bold green", title="Готово"))
 
@@ -400,6 +444,7 @@ def migrate_pvc(
     pvc_name: str,
     wtype: str,
     workload: str,
+    target_size: str | None = None,
 ) -> None:
     total_steps = 9
     ns = runner.namespace
@@ -414,13 +459,34 @@ def migrate_pvc(
                 "accessModes": ["ReadWriteOnce"],
             }
         }
-    size = pvc_data["spec"]["resources"]["requests"]["storage"]
+    source_size = pvc_data["spec"]["resources"]["requests"]["storage"]
     access_modes = pvc_data["spec"].get("accessModes", ["ReadWriteOnce"])
     current_sc = pvc_data["spec"].get("storageClassName", "")
+
+    # Запрос целевого размера (аргумент или интерактивно)
+    if target_size is None:
+        target_size = Prompt.ask(
+            "[bold]Размер целевого PVC[/bold]",
+            default=source_size,
+            console=console,
+        ).strip()
+    assert target_size is not None
+    if not validate_size(target_size):
+        print_error_panel(
+            f"Некорректный размер PVC: '{target_size}'.\n"
+            "Ожидается формат <число><суффикс>, например: 15Gi, 500Mi, 2Ti.\n"
+            "Допустимые суффиксы: Ki, Mi, Gi, Ti, Pi, Ei."
+        )
+        raise RuntimeError(f"Некорректный размер PVC: {target_size}")
+
+    size_changed = source_size != target_size
+
     logger.info(
-        f"storage: [bold]{size}[/bold], "
-        f"accessModes: [bold]{access_modes}[/bold], "
+        f"storage: [bold]{source_size}[/bold]"
+        + (f" -> [bold yellow]{target_size}[/bold yellow]" if size_changed else "")
+        + f", accessModes: [bold]{access_modes}[/bold], "
         f"SC: [bold yellow]{current_sc}[/bold yellow]"
+        + (f" -> [bold green]{LONGHORN_SC}[/bold green]" if current_sc != LONGHORN_SC else "")
     )
 
     if current_sc == LONGHORN_SC and not confirm(
@@ -445,7 +511,7 @@ def migrate_pvc(
 
     # --- Шаг 2 ---
     step(2, total_steps, f"Создание временного PVC {temp_pvc} (longhorn)")
-    manifest = build_pvc_manifest(temp_pvc, ns, size, access_modes, LONGHORN_SC)
+    manifest = build_pvc_manifest(temp_pvc, ns, target_size, access_modes, LONGHORN_SC)
     runner.apply_manifest(manifest, title=f"PVC {temp_pvc}")
     logger.info(f"Ожидание PVC {temp_pvc} -> Bound...")
     if not runner.dry_run:
@@ -507,7 +573,7 @@ def migrate_pvc(
     # --- Шаг 9 ---
     step(9, total_steps, f"Создание PVC {pvc_name} (longhorn)")
     new_manifest = build_pvc_manifest(
-        pvc_name, ns, size, access_modes, LONGHORN_SC
+        pvc_name, ns, target_size, access_modes, LONGHORN_SC
     )
     runner.apply_manifest(new_manifest, title=f"PVC {pvc_name}")
     logger.info(f"Ожидание PVC {pvc_name} -> Bound...")
@@ -524,7 +590,7 @@ def migrate_pvc(
         f"PVC {pvc_name} -> PV {final_pv}, SC={final_sc}"
     )
 
-    print_final_instructions(ns, wtype)
+    print_final_instructions(ns, wtype, source_size, target_size)
 
 
 # --------------------------------------------------------------------------- #
@@ -588,6 +654,10 @@ def main() -> int:
     )
     parser.add_argument("--workload", help="Имя workload (иначе выбор через меню)")
     parser.add_argument("--pvc", help="Имя PVC (иначе выбор через меню)")
+    parser.add_argument(
+        "--target-size",
+        help="Размер целевого PVC (например, 15Gi). Иначе — запрос интерактивно.",
+    )
     args = parser.parse_args()
 
     setup_logging(args.dry_run)
@@ -654,16 +724,64 @@ def main() -> int:
 
     logger.info(f"PVC для миграции: [bold]{pvc_name}[/bold]")
 
+    # Чтение размера исходного PVC для сводки
+    if args.dry_run:
+        source_size = "1Gi"
+    else:
+        pvc_data = get_pvc_spec(runner, pvc_name)
+        source_size = pvc_data["spec"]["resources"]["requests"]["storage"]
+
+    # Запрос целевого размера
+    target_size: str
+    if args.target_size:
+        target_size = args.target_size
+        if not validate_size(target_size):
+            print_error_panel(
+                f"Некорректный --target-size: '{target_size}'.\n"
+                "Ожидается формат <число><суффикс>, например: 15Gi, 500Mi, 2Ti.\n"
+                "Допустимые суффиксы: Ki, Mi, Gi, Ti, Pi, Ei."
+            )
+            return 1
+    else:
+        target_size = Prompt.ask(
+            "[bold]Размер целевого PVC[/bold]",
+            default=source_size,
+            console=console,
+        ).strip()
+        if not validate_size(target_size):
+            print_error_panel(
+                f"Некорректный размер PVC: '{target_size}'.\n"
+                "Ожидается формат <число><суффикс>, например: 15Gi, 500Mi, 2Ti.\n"
+                "Допустимые суффиксы: Ki, Mi, Gi, Ti, Pi, Ei."
+            )
+            return 1
+
+    # Предупреждение при уменьшении
+    src_gib = parse_size_gib(source_size)
+    dst_gib = parse_size_gib(target_size)
+    is_shrink = src_gib is not None and dst_gib is not None and dst_gib < src_gib
+    if is_shrink:
+        print_warning_panel(
+            f"Уменьшение PVC: {source_size} -> {target_size}\n"
+            "[bold]Убедитесь, что данные помещаются в новый размер![/bold]\n"
+            "Проверьте занятое место перед миграцией, например:\n"
+            f"  kubectl exec -n {args.namespace} <pod> -- du -sh /<mount-path>\n"
+            f"  kubectl exec -n {args.namespace} <pod> -- df -h /<mount-path>",
+            title="Уменьшение PVC",
+        )
+
     # Финальное подтверждение
     console.print()
-    print_summary(args.namespace, workload, wtype, pvc_name, args.dry_run)
+    print_summary(
+        args.namespace, workload, wtype, pvc_name, source_size, target_size, args.dry_run
+    )
     console.print()
     if not confirm("Начать миграцию?", default=False):
         logger.info("Отменено пользователем.")
         return 0
 
     try:
-        migrate_pvc(runner, pvc_name, wtype, workload)
+        migrate_pvc(runner, pvc_name, wtype, workload, target_size=target_size)
     except KeyboardInterrupt:
         logger.warning("Прервано пользователем (Ctrl+C).")
         print_error_panel(
