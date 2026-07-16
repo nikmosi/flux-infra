@@ -24,6 +24,7 @@
     pkgs.sops
     pkgs.kube-score
     pkgs.trivy
+    pkgs.uv
   ];
 
   git-hooks.hooks = {
