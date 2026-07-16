@@ -429,7 +429,7 @@ spec:
       # Size of the volume requested
       storage: 50Gi
       # Name of the storage class to use if it is different than the default one
-      storageClassName: local-path
+      storageClassName: longhorn
     # List of environment variables to set on the container
     env:
       - name: TZ
