@@ -23,6 +23,8 @@ spec:
   releaseName: ntfy
   targetNamespace: apps-ntfy
   values:
+    persistence:
+      storageClassName: "longhorn"
     image:
       pullPolicy: Always
     ingress:
