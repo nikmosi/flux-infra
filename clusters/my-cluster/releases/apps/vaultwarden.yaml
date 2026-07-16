@@ -133,7 +133,7 @@ spec:
       data:
         name: "vaultwarden-data"
         size: "15Gi"
-        class: ""
+        class: "longhorn"
         path: "/data"
         keepPvc: false
         accessMode: "ReadWriteOnce"
@@ -144,7 +144,7 @@ spec:
       attachments:
         name: "vaultwarden-files"
         size: "100Gi"
-        class: ""
+        class: "longhorn"
         path: /files
         keepPvc: false
         accessMode: "ReadWriteOnce"
