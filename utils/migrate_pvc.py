@@ -20,33 +20,130 @@ import json
 import subprocess
 import sys
 import time
-from datetime import datetime
 from typing import Any
+
+from loguru import logger
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm, Prompt
+from rich.syntax import Syntax
+from rich.table import Table
 
 LONGHORN_SC = "longhorn"
 MIGRATOR_POD = "data-migrator"
 MIGRATOR_IMAGE = "alpine:latest"
 MIGRATOR_TIMEOUT_S = 1800  # 30 минут максимум на один PVC
 
+console = Console()
+
 
 # --------------------------------------------------------------------------- #
-#  Logging
+#  Logging setup (loguru)
 # --------------------------------------------------------------------------- #
-def log(msg: str, *, level: str = "INFO") -> None:
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{ts}] [{level}] {msg}", flush=True)
+def setup_logging(dry_run: bool) -> None:
+    logger.remove()
+    fmt = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
+        "<level>{level: <8}</level> "
+        "<level>{message}</level>"
+    )
+    logger.add(
+        sys.stderr,
+        format=fmt,
+        level="DEBUG",
+        colorize=True,
+    )
+    if dry_run:
+        logger.warning("DRY-RUN режим: команды не выполняются")
 
 
-def step(n: int, total: int, title: str) -> None:
-    log(f"--- Шаг {n}/{total}: {title} ---")
+def log_cmd(args: list[str]) -> None:
+    cmd = " ".join(args)
+    logger.debug(f"$ [bold]{cmd}[/bold]")
+
+
+# --------------------------------------------------------------------------- #
+#  Rich helpers
+# --------------------------------------------------------------------------- #
+def print_yaml(manifest: str, *, title: str = "Manifest") -> None:
+    syntax = Syntax(manifest, "yaml", theme="monokai", line_numbers=False)
+    console.print(Panel(syntax, title=title, border_style="cyan", expand=False))
+
+
+def print_panel(msg: str, *, style: str = "cyan", title: str | None = None) -> None:
+    console.print(Panel(msg, title=title, border_style=style, expand=False))
+
+
+def print_summary(
+    namespace: str,
+    workload: str,
+    wtype: str,
+    pvc: str,
+    dry_run: bool,
+) -> None:
+    table = Table(title="Сводка миграции", border_style="bold blue", show_header=True)
+    table.add_column("Параметр", style="bold cyan", no_wrap=True)
+    table.add_column("Значение", style="white")
+    table.add_row("Namespace", namespace)
+    table.add_row("Workload", f"{wtype}/{workload}")
+    table.add_row("PVC", pvc)
+    table.add_row("Target SC", f"[bold green]{LONGHORN_SC}[/bold green]")
+    if dry_run:
+        table.add_row("Режим", "[bold yellow]DRY-RUN[/bold yellow]")
+    console.print(table)
+
+
+def print_final_instructions(ns: str, wtype: str) -> None:
+    lines = [
+        "[bold green]Миграция PVC завершена.[/bold green]",
+        "",
+        "[bold]ДАЛЬНЕЙШИЕ ШАГИ (вручную):[/bold]",
+        f"  1. Обновите [cyan]storageClassName[/cyan] в HelmRelease в git: "
+        f"[bold]{LONGHORN_SC}[/bold]",
+        f"  2. Закоммитьте и: [bold]flux resume helmrelease -n {ns} <release>[/bold]",
+        f"  3. Проверьте: [dim]kubectl get pods -n {ns}[/dim]",
+        f"               [dim]kubectl get pvc -n {ns}[/dim]",
+    ]
+    if wtype == "statefulset":
+        lines.append(
+            "  4. Для StatefulSet: обновите [cyan]volumeClaimTemplates[/cyan] в HelmRelease"
+        )
+    console.print(Panel("\n".join(lines), border_style="bold green", title="Готово"))
+
+
+def print_warning_panel(msg: str, *, title: str = "Внимание") -> None:
+    console.print(Panel(msg, title=title, border_style="bold yellow"))
+
+
+def print_error_panel(msg: str, *, title: str = "Ошибка") -> None:
+    console.print(Panel(msg, title=title, border_style="bold red"))
+
+
+# --------------------------------------------------------------------------- #
+#  Interactive menus (rich)
+# --------------------------------------------------------------------------- #
+def menu(title: str, options: list[str]) -> int:
+    if not options:
+        raise RuntimeError(f"Нет вариантов для выбора: {title}")
+    console.print(f"\n[bold cyan]=== {title} ===[/bold cyan]")
+    for i, opt in enumerate(options, 1):
+        console.print(f"  [bold green]{i}.[/bold green] [white]{opt}[/white]")
+    while True:
+        raw = Prompt.ask(
+            "[bold]Выберите[/bold]", default="1", console=console
+        ).strip()
+        if raw.isdigit() and 1 <= int(raw) <= len(options):
+            return int(raw) - 1
+        console.print("[red]Некорректный ввод, попробуйте снова.[/red]")
+
+
+def choose_workload_type() -> str:
+    idx = menu("Тип workload", ["Deployment", "StatefulSet"])
+    return ["deployment", "statefulset"][idx]
 
 
 def confirm(prompt: str, default: bool = False) -> bool:
-    suffix = " [Y/n] " if default else " [y/N] "
-    answer = input(f"{prompt}{suffix}").strip().lower()
-    if not answer:
-        return default
-    return answer in ("y", "yes", "да")
+    return Confirm.ask(f"[bold]{prompt}[/bold]", default=default, console=console)
 
 
 # --------------------------------------------------------------------------- #
@@ -65,8 +162,7 @@ class Runner:
         check: bool = True,
         timeout: int | None = None,
     ) -> subprocess.CompletedProcess[str]:
-        display = " ".join(args)
-        log(f"$ {display}")
+        log_cmd(args)
         if self.dry_run:
             return subprocess.CompletedProcess(args, 0, "", "")
         result = subprocess.run(
@@ -79,7 +175,8 @@ class Runner:
         if check and result.returncode != 0:
             stderr = result.stderr.strip() if capture else ""
             raise RuntimeError(
-                f"Команда завершилась с кодом {result.returncode}: {display}\n{stderr}"
+                f"Команда завершилась с кодом {result.returncode}: "
+                f"{' '.join(args)}\n{stderr}"
             )
         return result
 
@@ -98,8 +195,8 @@ class Runner:
         cp = self.kubectl(full, capture=True, check=True)
         return cp.stdout.strip() if not self.dry_run else ""
 
-    def apply_manifest(self, manifest: str) -> None:
-        log(f" Applying manifest:\n{manifest}")
+    def apply_manifest(self, manifest: str, *, title: str = "Apply") -> None:
+        print_yaml(manifest, title=title)
         if self.dry_run:
             return
         cp = subprocess.run(
@@ -109,12 +206,13 @@ class Runner:
             text=True,
             check=False,
         )
-        log(f" {cp.stdout.strip()}")
+        if cp.stdout.strip():
+            logger.info(cp.stdout.strip())
         if cp.returncode != 0:
             raise RuntimeError(f"kubectl apply failed:\n{cp.stderr}")
 
     def delete_manifest(self, manifest: str) -> None:
-        log(f" Deleting via manifest:\n{manifest}")
+        print_yaml(manifest, title="Delete")
         if self.dry_run:
             return
         cp = subprocess.run(
@@ -124,32 +222,15 @@ class Runner:
             text=True,
             check=False,
         )
-        log(f" {cp.stdout.strip()}")
+        if cp.stdout.strip():
+            logger.info(cp.stdout.strip())
         if cp.returncode != 0:
             raise RuntimeError(f"kubectl delete failed:\n{cp.stderr}")
 
 
 # --------------------------------------------------------------------------- #
-#  Interactive menus
+#  Resource listing
 # --------------------------------------------------------------------------- #
-def menu(title: str, options: list[str]) -> int:
-    if not options:
-        raise RuntimeError(f"Нет вариантов для выбора: {title}")
-    print(f"\n=== {title} ===")
-    for i, opt in enumerate(options, 1):
-        print(f"  {i}. {opt}")
-    while True:
-        raw = input(f"Выберите [1-{len(options)}]: ").strip()
-        if raw.isdigit() and 1 <= int(raw) <= len(options):
-            return int(raw) - 1
-        print("Некорректный ввод, попробуйте снова.")
-
-
-def choose_workload_type() -> str:
-    idx = menu("Тип workload", ["Deployment", "StatefulSet"])
-    return ["deployment", "statefulset"][idx]
-
-
 def list_workloads(runner: Runner, wtype: str) -> list[str]:
     if runner.dry_run:
         return ["dry-run-workload"]
@@ -187,7 +268,6 @@ def list_pvc_for_sts(runner: Runner, sts: str) -> list[str]:
     for tpl in template_names:
         for ordinal in range(replicas):
             pvcs.append(f"{tpl}-{sts}-{ordinal}")
-    # Фильтр: оставляем только реально существующие PVC
     if not pvcs:
         return []
     all_pvc = runner.kubectl_json(
@@ -257,16 +337,19 @@ spec:
 # --------------------------------------------------------------------------- #
 #  Migration steps
 # --------------------------------------------------------------------------- #
+def step(n: int, total: int, title: str) -> None:
+    console.rule(f"[bold blue]Шаг {n}/{total}: {title}[/bold blue]")
+
+
 def wait_for_migrator(runner: Runner) -> None:
     """Стримим логи migrator, затем проверяем статус. Если не Succeeded — повторяем."""
     if runner.dry_run:
-        log("dry-run: пропускаем ожидание migrator")
+        logger.info("dry-run: пропускаем ожидание migrator")
         return
 
     deadline = time.time() + MIGRATOR_TIMEOUT_S
     while time.time() < deadline:
-        # Стрим логов (блокирует до завершения pod или таймаута)
-        log("Стриминг логов migrator (kubectl logs -f)...")
+        logger.info("Стриминг логей migrator (kubectl logs -f)...")
         try:
             runner.kubectl(
                 ["logs", "-n", runner.namespace, MIGRATOR_POD, "-f"],
@@ -274,24 +357,21 @@ def wait_for_migrator(runner: Runner) -> None:
                 timeout=600,
             )
         except subprocess.TimeoutExpired:
-            log("kubectl logs -f превысил таймаут, проверяем статус...", level="WARN")
+            logger.warning("kubectl logs -f превысил таймаут, проверяем статус...")
 
-        # Проверяем финальный статус
         phase = runner.kubectl_jsonpath(
             ["get", "pod", "-n", runner.namespace, MIGRATOR_POD],
             "{.status.phase}",
         )
-        log(f"Статус migrator: {phase}")
-
         if phase == "Succeeded":
+            logger.success(f"Migrator завершён: {phase}")
             return
         if phase == "Failed":
             raise RuntimeError(
                 "Migrator завершился с ошибкой. Проверьте: "
                 f"kubectl logs -n {runner.namespace} {MIGRATOR_POD}"
             )
-        # Pending/Running/Unknown — продолжаем ждать
-        log(f"Фаза {phase}, продолжаем ожидание...", level="WARN")
+        logger.warning(f"Фаза {phase}, продолжаем ожидание...")
         time.sleep(5)
 
     raise RuntimeError(
@@ -310,7 +390,7 @@ def migrate_pvc(
     ns = runner.namespace
 
     # Получаем параметры старого PVC
-    log(f"Чтение спецификации PVC {pvc_name}...")
+    logger.info(f"Чтение спецификации PVC [bold]{pvc_name}[/bold]...")
     pvc_data = get_pvc_spec(runner, pvc_name)
     if runner.dry_run:
         pvc_data = {
@@ -322,62 +402,62 @@ def migrate_pvc(
     size = pvc_data["spec"]["resources"]["requests"]["storage"]
     access_modes = pvc_data["spec"].get("accessModes", ["ReadWriteOnce"])
     current_sc = pvc_data["spec"].get("storageClassName", "")
-    log(f"  storage: {size}, accessModes: {access_modes}, SC: {current_sc}")
+    logger.info(
+        f"storage: [bold]{size}[/bold], "
+        f"accessModes: [bold]{access_modes}[/bold], "
+        f"SC: [bold yellow]{current_sc}[/bold yellow]"
+    )
 
     if current_sc == LONGHORN_SC and not confirm(
         f"PVC {pvc_name} уже использует storageClassName={LONGHORN_SC}. "
         "Продолжить миграцию?",
         default=False,
     ):
-        log("Пропуск по запросу пользователя.")
+        logger.info("Пропуск по запросу пользователя.")
         return
 
     temp_pvc = f"{pvc_name}-longhorn"
 
-    # --- Шаг 1: scale workload до 0 ---
+    # --- Шаг 1 ---
     step(1, total_steps, f"Остановка {wtype} {workload} (replicas=0)")
     runner.kubectl(
         ["scale", wtype, workload, "-n", ns, "--replicas=0"],
         check=True,
     )
-
-    # Ждём пока поды остановятся
-    log("Ожидание остановки подов...")
+    logger.info("Ожидание остановки подов...")
     if not runner.dry_run:
         _wait_pods_gone(runner, ns, workload, wtype)
 
-    # --- Шаг 2: создание временного PVC с longhorn ---
+    # --- Шаг 2 ---
     step(2, total_steps, f"Создание временного PVC {temp_pvc} (longhorn)")
     manifest = build_pvc_manifest(temp_pvc, ns, size, access_modes, LONGHORN_SC)
-    runner.apply_manifest(manifest)
-
-    # Ждём Bound
-    log(f"Ожидание PVC {temp_pvc} -> Bound...")
+    runner.apply_manifest(manifest, title=f"PVC {temp_pvc}")
+    logger.info(f"Ожидание PVC {temp_pvc} -> Bound...")
     if not runner.dry_run:
         _wait_pvc_bound(runner, ns, temp_pvc)
 
-    # --- Шаг 3: запуск migrator pod ---
+    # --- Шаг 3 ---
     step(3, total_steps, "Запуск pod-мигратора для копирования данных")
     pod_manifest = build_migrator_pod_manifest(ns, pvc_name, temp_pvc)
-    runner.apply_manifest(pod_manifest)
+    runner.apply_manifest(pod_manifest, title="Migrator Pod")
 
-    # --- Шаг 4: ожидание завершения копирования ---
+    # --- Шаг 4 ---
     step(4, total_steps, "Ожидание завершения копирования данных")
     wait_for_migrator(runner)
 
-    # --- Шаг 5: удаление migrator ---
+    # --- Шаг 5 ---
     step(5, total_steps, "Удаление pod-мигратора")
     runner.kubectl(
         ["delete", "pod", MIGRATOR_POD, "-n", ns, "--ignore-not-found"],
         check=True,
     )
 
-    # --- Шаг 6: PV -> Retain, удаление временного PVC ---
+    # --- Шаг 6 ---
     step(6, total_steps, "PV -> Retain, удаление временного PVC")
     pv_name = runner.kubectl_jsonpath(
         ["get", "pvc", temp_pvc, "-n", ns], "{.spec.volumeName}"
     )
-    log(f"  PV: {pv_name}")
+    logger.info(f"PV: [bold cyan]{pv_name}[/bold cyan]")
     if pv_name:
         runner.kubectl(
             [
@@ -391,7 +471,7 @@ def migrate_pvc(
         )
     runner.kubectl(["delete", "pvc", temp_pvc, "-n", ns], check=True)
 
-    # --- Шаг 7: очистка claimRef у PV ---
+    # --- Шаг 7 ---
     step(7, total_steps, "Очистка claimRef у PV (-> Available)")
     if pv_name:
         runner.kubectl(
@@ -405,40 +485,31 @@ def migrate_pvc(
             check=True,
         )
 
-    # --- Шаг 8: удаление старого PVC ---
+    # --- Шаг 8 ---
     step(8, total_steps, f"Удаление старого PVC {pvc_name} (local-path)")
     runner.kubectl(["delete", "pvc", pvc_name, "-n", ns], check=True)
 
-    # --- Шаг 9: создание нового PVC с оригинальным именем ---
+    # --- Шаг 9 ---
     step(9, total_steps, f"Создание PVC {pvc_name} (longhorn)")
     new_manifest = build_pvc_manifest(
         pvc_name, ns, size, access_modes, LONGHORN_SC
     )
-    runner.apply_manifest(new_manifest)
-
-    log(f"Ожидание PVC {pvc_name} -> Bound...")
+    runner.apply_manifest(new_manifest, title=f"PVC {pvc_name}")
+    logger.info(f"Ожидание PVC {pvc_name} -> Bound...")
     if not runner.dry_run:
         _wait_pvc_bound(runner, ns, pvc_name)
 
-    # Проверка
     final_pv = runner.kubectl_jsonpath(
         ["get", "pvc", pvc_name, "-n", ns], "{.spec.volumeName}"
     )
     final_sc = runner.kubectl_jsonpath(
         ["get", "pvc", pvc_name, "-n", ns], "{.spec.storageClassName}"
     )
-    log(f"  PVC {pvc_name} -> PV {final_pv}, SC={final_sc}")
+    logger.success(
+        f"PVC {pvc_name} -> PV {final_pv}, SC={final_sc}"
+    )
 
-    log("=" * 60)
-    log("Миграция PVC завершена.")
-    log("ДАЛЬНЕЙШИЕ ШАГИ (вручную):")
-    log(f"  1. Обновите storageClassName в HelmRelease в git: {LONGHORN_SC}")
-    log(f"  2. Закоммитьте и: flux resume helmrelease -n {ns} <release>")
-    log(f"  3. Проверьте: kubectl get pods -n {ns}")
-    log(f"               kubectl get pvc -n {ns}")
-    if wtype == "statefulset":
-        log("  4. Для StatefulSet: обновите volumeClaimTemplates в HelmRelease")
-    log("=" * 60)
+    print_final_instructions(ns, wtype)
 
 
 # --------------------------------------------------------------------------- #
@@ -451,7 +522,7 @@ def _wait_pvc_bound(runner: Runner, ns: str, pvc_name: str, timeout: int = 120) 
             ["get", "pvc", pvc_name, "-n", ns], "{.status.phase}"
         )
         if phase == "Bound":
-            log(f"  PVC {pvc_name} Bound")
+            logger.success(f"PVC {pvc_name} -> Bound")
             return
         time.sleep(3)
     raise RuntimeError(
@@ -472,12 +543,11 @@ def _wait_pods_gone(
         )
         ready = cp.stdout.strip() if cp.stdout else "0"
         if ready in ("", "0"):
-            log(f"  {wtype} {workload}: 0 ready replicas")
+            logger.success(f"{wtype} {workload}: 0 ready replicas")
             return
         time.sleep(2)
-    log(
-        f"Поды {workload} не остановились за {timeout}с, продолжаем...",
-        level="WARN",
+    logger.warning(
+        f"Поды {workload} не остановились за {timeout}с, продолжаем..."
     )
 
 
@@ -505,27 +575,27 @@ def main() -> int:
     parser.add_argument("--pvc", help="Имя PVC (иначе выбор через меню)")
     args = parser.parse_args()
 
+    setup_logging(args.dry_run)
     runner = Runner(dry_run=args.dry_run, namespace=args.namespace)
 
-    log(f"Namespace: {args.namespace}")
-    if args.dry_run:
-        log("DRY-RUN режим: команды не выполняются", level="WARN")
+    logger.info(f"Namespace: [bold]{args.namespace}[/bold]")
 
     # Проверка доступности kubectl
     if not args.dry_run:
         try:
             runner.kubectl(["cluster-info"], capture=True, check=True)
         except Exception as e:
-            log(f"Не удалось подключиться к кластеру: {e}", level="ERROR")
+            print_error_panel(f"Не удалось подключиться к кластеру:\n{e}")
             return 1
 
     # Напоминание о flux suspend
-    log("=" * 60)
-    log("ВНИМАНИЕ: Перед миграцией необходимо приостановить HelmRelease:")
-    log(f"  flux suspend helmrelease -n {args.namespace} <release-name>")
-    log("=" * 60)
+    print_warning_panel(
+        f"Перед миграцией необходимо приостановить HelmRelease:\n"
+        f"[bold]flux suspend helmrelease -n {args.namespace} <release-name>[/bold]",
+        title="Flux Suspend",
+    )
     if not confirm("Вы уже выполнили flux suspend helmrelease?", default=False):
-        log("Сначала приостановьте HelmRelease, затем запустите скрипт снова.")
+        logger.info("Сначала приостановьте HelmRelease, затем запустите скрипт снова.")
         return 1
 
     # Выбор типа workload
@@ -537,12 +607,14 @@ def main() -> int:
     else:
         workloads = list_workloads(runner, wtype)
         if not workloads:
-            log(f"Не найдено {wtype} в namespace {args.namespace}", level="ERROR")
+            print_error_panel(
+                f"Не найдено {wtype} в namespace {args.namespace}"
+            )
             return 1
         idx = menu(f"Выберите {wtype}", workloads)
         workload = workloads[idx]
 
-    log(f"Workload: {wtype}/{workload}")
+    logger.info(f"Workload: [bold]{wtype}/{workload}[/bold]")
 
     # Выбор PVC
     if args.pvc:
@@ -553,52 +625,43 @@ def main() -> int:
         else:
             pvcs = list_pvc_for_sts(runner, workload)
         if not pvcs:
-            log(
-                f"Не найдено PVC для {wtype}/{workload}. "
-                "Возможно, workload не использует persistentVolumeClaim.",
-                level="ERROR",
+            print_error_panel(
+                f"Не найдено PVC для {wtype}/{workload}.\n"
+                "Возможно, workload не использует persistentVolumeClaim."
             )
             return 1
         if len(pvcs) == 1:
             pvc_name = pvcs[0]
-            log(f"Найден один PVC: {pvc_name}")
+            logger.info(f"Найден один PVC: [bold]{pvc_name}[/bold]")
         else:
             idx = menu("Выберите PVC для миграции", pvcs)
             pvc_name = pvcs[idx]
 
-    log(f"PVC для миграции: {pvc_name}")
+    logger.info(f"PVC для миграции: [bold]{pvc_name}[/bold]")
 
     # Финальное подтверждение
-    print()
-    log("СВОДКА МИГРАЦИИ:")
-    log(f"  Namespace : {args.namespace}")
-    log(f"  Workload  : {wtype}/{workload}")
-    log(f"  PVC       : {pvc_name}")
-    log(f"  Target SC : {LONGHORN_SC}")
-    if args.dry_run:
-        log("  Режим     : DRY-RUN")
-    print()
+    console.print()
+    print_summary(args.namespace, workload, wtype, pvc_name, args.dry_run)
+    console.print()
     if not confirm("Начать миграцию?", default=False):
-        log("Отменено пользователем.")
+        logger.info("Отменено пользователем.")
         return 0
 
     try:
         migrate_pvc(runner, pvc_name, wtype, workload)
     except KeyboardInterrupt:
-        log("Прервано пользователем (Ctrl+C).", level="WARN")
-        log(
-            "ВНИМАНИЕ: миграция может быть в незавершённом состоянии. "
-            "Проверьте: kubectl get pvc,pod,pv -n "
-            f"{args.namespace}",
-            level="ERROR",
+        logger.warning("Прервано пользователем (Ctrl+C).")
+        print_error_panel(
+            "Миграция может быть в незавершённом состоянии.\n"
+            f"Проверьте: kubectl get pvc,pod,pv -n {args.namespace}",
+            title="Прервано",
         )
         return 130
     except Exception as e:
-        log(f"Ошибка: {e}", level="ERROR")
-        log(
-            "Проверьте состояние ресурсов: "
+        print_error_panel(
+            f"Ошибка: {e}\n\n"
+            f"Проверьте состояние ресурсов:\n"
             f"kubectl get pvc,pod,pv -n {args.namespace}",
-            level="ERROR",
         )
         return 1
 
