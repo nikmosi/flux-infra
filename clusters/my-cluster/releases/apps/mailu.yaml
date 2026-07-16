@@ -6,6 +6,7 @@ metadata:
   namespace: apps-mailu
 spec:
   interval: 5m
+  suspend: true
   install:
     remediation:
       retries: 3
