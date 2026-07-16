@@ -176,12 +176,25 @@ def list_pvc_for_deployment(runner: Runner, deploy: str) -> list[str]:
 def list_pvc_for_sts(runner: Runner, sts: str) -> list[str]:
     if runner.dry_run:
         return ["dry-run-pvc"]
-    # PVC для STS имеют имена <sts>-<templateName>-<ordinal>
+    # PVC для STS имеют имена <templateName>-<stsName>-<ordinal>
+    sts_data = runner.kubectl_json(
+        ["get", "statefulset", sts, "-n", runner.namespace, "-o", "json"]
+    )
+    templates = sts_data["spec"].get("volumeClaimTemplates", [])
+    template_names = [t["metadata"]["name"] for t in templates]
+    replicas = sts_data["spec"].get("replicas", 1)
+    pvcs: list[str] = []
+    for tpl in template_names:
+        for ordinal in range(replicas):
+            pvcs.append(f"{tpl}-{sts}-{ordinal}")
+    # Фильтр: оставляем только реально существующие PVC
+    if not pvcs:
+        return []
     all_pvc = runner.kubectl_json(
         ["get", "pvc", "-n", runner.namespace, "-o", "json"]
     )
-    names = [item["metadata"]["name"] for item in all_pvc.get("items", [])]
-    return [n for n in names if n.startswith(f"{sts}-")]
+    existing = {item["metadata"]["name"] for item in all_pvc.get("items", [])}
+    return [p for p in pvcs if p in existing]
 
 
 def get_pvc_spec(runner: Runner, pvc_name: str) -> dict[str, Any]:
