@@ -38,21 +38,36 @@ console = Console()
 
 
 # --------------------------------------------------------------------------- #
-#  Logging setup (loguru)
+#  Logging setup (loguru -> rich sink)
 # --------------------------------------------------------------------------- #
+_LEVEL_STYLES: dict[str, str] = {
+    "TRACE": "dim",
+    "DEBUG": "dim cyan",
+    "INFO": "bold cyan",
+    "SUCCESS": "bold green",
+    "WARNING": "bold yellow",
+    "ERROR": "bold red",
+    "CRITICAL": "bold white on red",
+}
+
+
+def _rich_sink(message: Any) -> None:
+    """Loguru sink, рендерящий сообщения через rich Console с поддержкой markup."""
+    record = message.record
+    level_name = record["level"].name
+    style = _LEVEL_STYLES.get(level_name, "white")
+    time_str = record["time"].strftime("%Y-%m-%d %H:%M:%S")
+    msg = record["message"]
+    console.print(
+        f"[dim]{time_str}[/dim] [{style}]{level_name:<8}[/] {msg}",
+        markup=True,
+        highlight=False,
+    )
+
+
 def setup_logging(dry_run: bool) -> None:
     logger.remove()
-    fmt = (
-        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
-        "<level>{level: <8}</level> "
-        "<level>{message}</level>"
-    )
-    logger.add(
-        sys.stderr,
-        format=fmt,
-        level="DEBUG",
-        colorize=True,
-    )
+    logger.add(_rich_sink, level="DEBUG", colorize=False)
     if dry_run:
         logger.warning("DRY-RUN режим: команды не выполняются")
 
