@@ -13,3 +13,4 @@ resources:
 - rm3l-adguard-home-helm.yaml
 - excalidraw-helm.yaml
 - longhorn-helm.yaml
+- cnpg-helm.yaml
