@@ -31,3 +31,4 @@ resources:
 - excalidraw-middleware.yaml
 - longhorn-system.yaml
 - longhorn-system-middleware.yaml
+- database.yaml
