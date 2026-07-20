@@ -19,7 +19,7 @@ spec:
     domain: "cluster.local"
   sync:
     kind: GitRepository
-    url: "ssh://git@git.xinfra.ru/nikmosi/flux-infra.git"
+    url: "ssh://git@forgejo-ssh.apps-forgejo.svc.cluster.local/nikmosi/flux-infra.git"
     ref: "refs/heads/main"
     path: "clusters/my-cluster"
     pullSecret: "flux-system"

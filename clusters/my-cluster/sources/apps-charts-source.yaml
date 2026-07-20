@@ -10,4 +10,4 @@ spec:
     branch: main
   secretRef:
     name: apps-charts
-  url: ssh://git@git.xinfra.ru/nikmosi/apps-charts.git
+  url: ssh://git@forgejo-ssh.apps-forgejo.svc.cluster.local/nikmosi/apps-charts.git
