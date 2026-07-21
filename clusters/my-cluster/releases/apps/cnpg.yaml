@@ -17,6 +17,10 @@ spec:
   values:
     monitoring:
       podMonitorEnabled: true
+      grafanaDashboardsEnabled: true
+      customDashboardLabels:
+        grafana_dashboard: "1"
+      prometheusRuleEnabled: true
     resources:
       limits:
         cpu: 100m
@@ -24,3 +28,40 @@ spec:
       requests:
         cpu: 100m
         memory: 100Mi
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: lab-postgres
+  namespace: database
+spec:
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+
+  primaryUpdateStrategy: unsupervised
+
+  storage:
+    storageClass: longhorn
+    size: 10Gi
+
+  walStorage:
+    storageClass: longhorn
+    size: 5Gi
+
+  bootstrap:
+    initdb:
+      database: app_db
+      owner: app_user
+
+  postgresql:
+    parameters:
+      shared_buffers: "256MB"
+      max_connections: "100"
+
+  monitoring:
+    enablePodMonitor: true
