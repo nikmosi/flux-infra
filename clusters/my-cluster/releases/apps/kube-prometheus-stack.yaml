@@ -200,6 +200,8 @@ spec:
         dashboards:
           enabled: true
           searchNamespace: ALL
+          label: grafana_dashboard
+          labelValue: "1"
         datasources:
           enabled: true
           defaultDatasourceEnabled: true
