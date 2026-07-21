@@ -32,3 +32,4 @@ resources:
 - longhorn-system.yaml
 - longhorn-system-middleware.yaml
 - database.yaml
+- apps-pgadmin.yaml

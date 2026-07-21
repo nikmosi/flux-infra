@@ -21,3 +21,4 @@ resources:
 - supersync.yaml
 - longhorn.yaml
 - cnpg.yaml
+- pgadmin.yaml
