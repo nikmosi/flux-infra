@@ -5,6 +5,9 @@ metadata:
   name: pgadmin
   namespace: apps-pgadmin
 spec:
+  dependsOn:
+    - name: authelia
+      namespace: apps-authelia
   interval: 5m
   install:
     remediation:
@@ -38,6 +41,8 @@ spec:
     ingress:
       enabled: true
       ingressClassName: "traefik"
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: apps-pgadmin-forwardauth-authelia@kubernetescrd
       hosts:
         - host: pgadmin.xinfra.ru
           paths:

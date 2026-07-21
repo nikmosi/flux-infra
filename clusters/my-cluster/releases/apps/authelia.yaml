@@ -301,6 +301,9 @@ spec:
               - longhorn.xinfra.ru
             policy: two_factor
           - domain:
+              - pgadmin.xinfra.ru
+            policy: one_factor
+          - domain:
               - "*.xinfra.ru"
             policy: two_factor
 
