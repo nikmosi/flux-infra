@@ -19,7 +19,5 @@ resources:
 - goldilocks.yaml
 - ntfy.yaml
 - supersync.yaml
-- mailu.yaml
-- mailu-ingressroute-tcp.yaml
 - longhorn.yaml
 - cnpg.yaml
