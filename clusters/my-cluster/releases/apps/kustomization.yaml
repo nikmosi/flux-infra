@@ -5,7 +5,6 @@ resources:
 - authelia.yaml
 - authelia-ingressroute.yaml
 - zot.yaml
-- crowdsec.yaml
 - vikunja.yaml
 - vaultwarden.yaml
 - adguard.yaml
