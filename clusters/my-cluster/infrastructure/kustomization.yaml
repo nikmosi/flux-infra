@@ -6,3 +6,5 @@ resources:
 - storage/
 - traefik/overlays/
 - flux-operator-ingress.yaml
+- flux-operator-source.yaml
+- flux-operator-helmrelease.yaml
