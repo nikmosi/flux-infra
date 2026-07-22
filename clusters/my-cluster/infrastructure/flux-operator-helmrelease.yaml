@@ -10,4 +10,6 @@ spec:
     kind: OCIRepository
     name: flux-operator
   upgrade:
-    strategy: RetryOnFailure
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
