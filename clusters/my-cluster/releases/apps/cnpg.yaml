@@ -19,8 +19,6 @@ spec:
       podMonitorEnabled: true
       grafanaDashboard:
         create: true
-        labels:
-          grafana_dashboard: "1"
     resources:
       limits:
         cpu: 100m
