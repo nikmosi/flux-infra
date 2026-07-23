@@ -17,10 +17,10 @@ spec:
   values:
     monitoring:
       podMonitorEnabled: true
-      grafanaDashboardsEnabled: true
-      customDashboardLabels:
-        grafana_dashboard: "1"
-      prometheusRuleEnabled: true
+      grafanaDashboard:
+        create: true
+        labels:
+          grafana_dashboard: "1"
     resources:
       limits:
         cpu: 100m
