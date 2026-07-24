@@ -16,16 +16,6 @@ spec:
     name: flux-system
   timeout: 5m0s
   wait: true
-  driftDetection:
-    mode: enabled
-  ignore:
-    - paths:
-        - "status"
-        - "metadata.generation"
-        - "metadata.managedFields"
-        - "metadata.annotations"
-      target:
-        kind: ".*"
   decryption:
     provider: sops
     secretRef:
