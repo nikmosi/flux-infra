@@ -6,6 +6,16 @@ metadata:
   namespace: database
 spec:
   interval: 10m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "status"
+          - "metadata.generation"
+          - "metadata.managedFields"
+          - "metadata.annotations"
+        target:
+          kind: "*"
   chart:
     spec:
       chart: cloudnative-pg

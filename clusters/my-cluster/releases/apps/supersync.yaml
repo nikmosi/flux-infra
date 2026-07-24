@@ -7,6 +7,16 @@ metadata:
 spec:
   suspend: true
   interval: 5m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "status"
+          - "metadata.generation"
+          - "metadata.managedFields"
+          - "metadata.annotations"
+        target:
+          kind: "*"
   install:
     remediation:
       retries: 3

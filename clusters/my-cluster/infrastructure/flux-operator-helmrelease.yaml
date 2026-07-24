@@ -5,6 +5,16 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "status"
+          - "metadata.generation"
+          - "metadata.managedFields"
+          - "metadata.annotations"
+        target:
+          kind: "*"
   releaseName: flux-operator
   chartRef:
     kind: OCIRepository
