@@ -16,6 +16,12 @@ spec:
     name: flux-system
   timeout: 5m0s
   wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
   decryption:
     provider: sops
     secretRef:

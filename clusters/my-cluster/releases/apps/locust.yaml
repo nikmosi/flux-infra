@@ -10,10 +10,10 @@ spec:
     mode: enabled
     ignore:
       - paths:
-          - "status"
-          - "metadata.generation"
-          - "metadata.managedFields"
-          - "metadata.annotations"
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
         target:
           kind: ".*"
   install:
