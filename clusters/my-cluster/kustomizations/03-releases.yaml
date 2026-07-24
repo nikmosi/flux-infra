@@ -19,8 +19,6 @@ spec:
   wait: true
   driftDetection:
     mode: enabled
-  remediation:
-    remediate: true
   ignore:
     - paths:
         - "status"
@@ -28,7 +26,7 @@ spec:
         - "metadata.managedFields"
         - "metadata.annotations"
       target:
-        kind: "*"
+        kind: ".*"
   decryption:
     provider: sops
     secretRef:

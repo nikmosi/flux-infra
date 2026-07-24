@@ -20,7 +20,7 @@ spec:
           - "metadata.managedFields"
           - "metadata.annotations"
         target:
-          kind: "*"
+          kind: ".*"
   install:
     remediation:
       retries: 3

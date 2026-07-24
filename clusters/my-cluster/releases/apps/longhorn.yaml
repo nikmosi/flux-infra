@@ -23,7 +23,7 @@ spec:
           - "metadata.managedFields"
           - "metadata.annotations"
         target:
-          kind: "*"
+          kind: ".*"
   releaseName: longhorn
   targetNamespace: longhorn-system
   install:

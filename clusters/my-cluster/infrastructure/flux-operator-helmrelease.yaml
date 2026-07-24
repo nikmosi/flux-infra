@@ -14,7 +14,7 @@ spec:
           - "metadata.managedFields"
           - "metadata.annotations"
         target:
-          kind: "*"
+          kind: ".*"
   releaseName: flux-operator
   chartRef:
     kind: OCIRepository
