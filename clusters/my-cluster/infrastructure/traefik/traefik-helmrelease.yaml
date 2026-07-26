@@ -1,14 +1,45 @@
 ---
-apiVersion: helm.cattle.io/v1
-kind: HelmChartConfig
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
 metadata:
   name: traefik
-  namespace: kube-system
+  namespace: traefik
 spec:
-  valuesContent: |-
+  interval: 30m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
+        target:
+          kind: ".*"
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
+    remediation:
+      retries: 3
+  releaseName: traefik
+  chart:
+    spec:
+      chart: traefik
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+      interval: 1h
+  targetNamespace: traefik
+  values:
     env:
       - name: TZ
         value: Asia/Novosibirsk
+
     ports:
       websecure:
         transport:
