@@ -10,7 +10,6 @@ resources:
 - apps-goldilocks.yaml
 - apps-kube-prometheus-stack.yaml
 - apps-lldap.yaml
-- apps-mailu.yaml
 # - apps-mealie.yaml
 - apps-noise.yaml
 - apps-ntfy.yaml
