@@ -32,4 +32,7 @@ spec:
       interval: 1h
   releaseName: dozzle
   targetNamespace: monitoring
-  values: {}
+  values:
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd

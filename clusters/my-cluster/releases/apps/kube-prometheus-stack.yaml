@@ -149,6 +149,8 @@ spec:
       ingress:
         enabled: true
         ingressClassName: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd
         hosts:
           - grafana.xinfra.ru
         path: /

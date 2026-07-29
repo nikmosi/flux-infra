@@ -53,6 +53,7 @@ spec:
       ingressClassName: "traefik"
       annotations:
         traefik.ingress.kubernetes.io/router.middlewares: apps-pgadmin-forwardauth-authelia@kubernetescrd
+        traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd
       hosts:
         - host: pgadmin.xinfra.ru
           paths:

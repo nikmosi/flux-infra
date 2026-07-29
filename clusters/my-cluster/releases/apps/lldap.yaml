@@ -41,3 +41,6 @@ spec:
     extraEnv:
       - name: TZ
         value: Asia/Novosibirsk
+    ingress:
+      annotations:
+        traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd

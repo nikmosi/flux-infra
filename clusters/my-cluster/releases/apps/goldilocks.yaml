@@ -95,6 +95,7 @@ spec:
         ingressClassName: traefik
         annotations:
           traefik.ingress.kubernetes.io/router.middlewares: apps-goldilocks-forwardauth-authelia@kubernetescrd
+          traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd
         hosts:
           - host: goldilocks.xinfra.ru
             paths:

@@ -31,4 +31,7 @@ spec:
         - name: flux-operator
           port: 9080
   tls:
+    options:
+      name: mtls-strict
+      namespace: traefik
     secretName: wildcard-xinfra-ru-tls

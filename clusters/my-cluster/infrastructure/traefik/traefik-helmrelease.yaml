@@ -36,6 +36,9 @@ spec:
       interval: 1h
   targetNamespace: traefik
   values:
+    providers:
+      kubernetesCRD:
+        allowCrossNamespace: true
     env:
       - name: TZ
         value: Asia/Novosibirsk
