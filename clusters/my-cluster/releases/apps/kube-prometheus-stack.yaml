@@ -128,6 +128,8 @@ spec:
 
     grafana:
       enabled: true
+      deploymentStrategy:
+        type: Recreate
       defaultDashboardsEnabled: true
       defaultDashboardsTimezone: Asia/Novosibirsk
 
