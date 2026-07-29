@@ -5,6 +5,8 @@ metadata:
   name: sources
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: secrets
   interval: 10m0s
   path: ./clusters/my-cluster/sources
   prune: true
