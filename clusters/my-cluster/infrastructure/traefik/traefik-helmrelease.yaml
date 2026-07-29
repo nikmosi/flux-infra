@@ -44,7 +44,17 @@ spec:
         value: Asia/Novosibirsk
 
     ports:
+      web:
+        port: 8000
+        expose:
+          default: true
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
       websecure:
+        http2: false
         transport:
           respondingTimeouts:
             readTimeout: 10m
