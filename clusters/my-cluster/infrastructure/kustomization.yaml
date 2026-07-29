@@ -6,6 +6,7 @@ resources:
 - storage/
 - traefik/namespace.yaml
 - traefik/traefik-helmrelease.yaml
+- traefik/tlsoption-strictverify.yaml
 - flux-operator-ingress.yaml
 - flux-operator-source.yaml
 - flux-operator-helmrelease.yaml
