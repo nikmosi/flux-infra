@@ -32,13 +32,4 @@ spec:
     timeout: 20m0s
   values:
     ingress:
-      enabled: true
-      ingressClassName: traefik
-      host: longhorn.xinfra.ru
-      path: /
-      pathType: Prefix
-      tls: true
-      tlsSecret: wildcard-xinfra-ru-tls
-      annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: longhorn-system-forwardauth-authelia@kubernetescrd,longhorn-system-longhorn-buffering@kubernetescrd
-        traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd
+      enabled: false

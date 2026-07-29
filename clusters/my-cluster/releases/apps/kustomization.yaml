@@ -18,5 +18,6 @@ resources:
 - ntfy.yaml
 - supersync.yaml
 - longhorn.yaml
+- longhorn-ingressroute.yaml
 - cnpg.yaml
 - pgadmin.yaml
