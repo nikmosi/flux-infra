@@ -16,3 +16,4 @@ resources:
 - cnpg-helm.yaml
 - runix-helm.yaml
 - traefik-helm.yaml
+- forgejo-runner-helm.yaml

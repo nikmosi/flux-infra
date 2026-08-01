@@ -1,0 +1,62 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo-runner
+  namespace: apps-forgejo-runner
+spec:
+  interval: 5m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
+        target:
+          kind: ".*"
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: forgejo-runner
+      sourceRef:
+        kind: HelmRepository
+        name: forgejo-runner
+        namespace: flux-system
+      interval: 1h
+  releaseName: forgejo-runner
+  targetNamespace: apps-forgejo-runner
+  values:
+    knownLastVersion: true
+    runner:
+      config:
+        create: true
+        existingInitSecret: forgejo-runner-init
+        instance: http://forgejo.apps-forgejo.svc.cluster.local:3000
+        file:
+          runner:
+            capacity: 1
+            envs: {}
+            labels:
+              - "ubuntu-latest:docker://node:20-bullseye"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 3072Mi
+    dind:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: 2000m
+          memory: 3072Mi

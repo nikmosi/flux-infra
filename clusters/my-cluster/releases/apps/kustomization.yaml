@@ -9,6 +9,7 @@ resources:
 - adguard.yaml
 - dozzle.yaml
 - forgejo.yaml
+- forgejo-runner.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml
