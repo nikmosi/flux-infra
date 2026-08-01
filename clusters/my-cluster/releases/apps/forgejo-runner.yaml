@@ -44,7 +44,11 @@ spec:
             capacity: 1
             envs: {}
             labels:
-              - "ubuntu-latest:docker://node:20-bullseye"
+              - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
+          container:
+            privileged: true
+            valid_volumes:
+              - '**'
     resources:
       requests:
         cpu: 100m
