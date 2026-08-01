@@ -36,6 +36,12 @@ spec:
     forgejo:
       persistence:
         storageClass: "longhorn"
+      gitea:
+        config:
+          server:
+            LFS_START_SERVER: true
+          lfs:
+            ENABLED: true
     valkey:
       persistence:
         storageClassName: "longhorn"
