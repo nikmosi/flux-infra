@@ -29,6 +29,7 @@ spec:
   chart:
     spec:
       chart: traefik
+      version: "41.x"
       sourceRef:
         kind: HelmRepository
         name: traefik
@@ -48,13 +49,13 @@ spec:
         port: 8000
         expose:
           default: true
-        redirections:
-          entryPoint:
-            to: websecure
-            scheme: https
-            permanent: true
+        http:
+          redirections:
+            entryPoint:
+              to: websecure
+              scheme: https
+              permanent: true
       websecure:
-        http2: false
         transport:
           respondingTimeouts:
             readTimeout: 10m
