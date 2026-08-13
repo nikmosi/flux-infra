@@ -47,6 +47,7 @@ spec:
               - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
           container:
             privileged: true
+            docker_host: ""
             valid_volumes:
               - '**'
     resources:
@@ -64,3 +65,9 @@ spec:
         limits:
           cpu: 2000m
           memory: 3072Mi
+    volumes:
+      - name: dind-sock
+        emptyDir: {}
+    volumeMounts:
+      - name: dind-sock
+        mountPath: /var/run
