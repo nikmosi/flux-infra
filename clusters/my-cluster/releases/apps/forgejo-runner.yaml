@@ -70,6 +70,7 @@ spec:
           container:
             privileged: true
             docker_host: ""
+            options: "-v /var/run/docker.sock:/var/run/docker.sock"
             valid_volumes:
               - '**'
 
