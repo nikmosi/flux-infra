@@ -42,12 +42,15 @@ spec:
         file:
           runner:
             capacity: 1
-            envs: {}
+            envs:
+              DOCKER_HOST: "tcp://host.docker.internal:2376"
+              DOCKER_CERT_PATH: "/certs/client"
+              DOCKER_TLS_VERIFY: "1"
             labels:
               - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
           container:
             privileged: true
-            docker_host: ""
+            options: "--add-host=host.docker.internal:host-gateway -v /certs/client:/certs/client"
             valid_volumes:
               - '**'
     resources:
@@ -65,9 +68,3 @@ spec:
         limits:
           cpu: 2000m
           memory: 3072Mi
-    volumes:
-      - name: dind-sock
-        emptyDir: {}
-    volumeMounts:
-      - name: dind-sock
-        mountPath: /var/run
