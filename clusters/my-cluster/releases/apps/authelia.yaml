@@ -468,10 +468,12 @@ spec:
                 - profile
                 - email
                 - groups
+                - offline_access
               response_types:
                 - code
               grant_types:
                 - authorization_code
+                - refresh_token
               require_pkce: false
               token_endpoint_auth_method: client_secret_basic
 
