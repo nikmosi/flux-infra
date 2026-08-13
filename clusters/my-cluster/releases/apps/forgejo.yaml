@@ -33,11 +33,29 @@ spec:
   releaseName: forgejo
   targetNamespace: apps-forgejo
   values:
+    extraEnv:
+      - name: TZ
+        value: Asia/Novosibirsk
+      - name: FORGEJO__database__PASSWD
+        valueFrom:
+          secretKeyRef:
+            name: forgejo-db-secret
+            key: password
     forgejo:
+      replicaCount: 2
       persistence:
+        claimName: forgejo-shared-storage-rwx
+        size: 10Gi
+        accessModes:
+          - ReadWriteMany
         storageClass: "longhorn"
       gitea:
         config:
+          database:
+            DB_TYPE: postgres
+            HOST: lab-postgres-rw.database.svc.cluster.local:5432
+            NAME: forgejo
+            USER: forgejo
           server:
             LFS_START_SERVER: true
           lfs:
@@ -45,7 +63,4 @@ spec:
     valkey:
       persistence:
         storageClassName: "longhorn"
-    extraEnv:
-      - name: TZ
-        value: Asia/Novosibirsk
     ingress: {}
