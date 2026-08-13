@@ -42,17 +42,15 @@ spec:
         file:
           runner:
             capacity: 1
-            envs:
-              DOCKER_HOST: "tcp://host.docker.internal:2376"
-              DOCKER_CERT_PATH: "/certs/client"
-              DOCKER_TLS_VERIFY: "1"
+            envs: {}
             labels:
               - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
           container:
             privileged: true
-            options: "--add-host=host.docker.internal:host-gateway -v /certs/client:/certs/client"
+            options: "--add-host=host.docker.internal:host-gateway -v /certs/client:/certs/client -e DOCKER_HOST=tcp://host.docker.internal:2376 -e DOCKER_CERT_PATH=/certs/client -e DOCKER_TLS_VERIFY=1"
             valid_volumes:
               - '**'
+
     resources:
       requests:
         cpu: 100m
