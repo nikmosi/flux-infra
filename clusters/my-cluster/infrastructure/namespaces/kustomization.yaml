@@ -31,3 +31,4 @@ resources:
 - database.yaml
 - apps-pgadmin.yaml
 - pgadmin-middleware.yaml
+- twitch-sub-bot.yaml

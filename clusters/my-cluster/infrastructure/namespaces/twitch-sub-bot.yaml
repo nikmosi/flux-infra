@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: twitch-sub-bot
+  labels:
+    name: twitch-sub-bot
+    app.kubernetes.io/part-of: local-kube
