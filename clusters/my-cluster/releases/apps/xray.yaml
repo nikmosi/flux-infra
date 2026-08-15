@@ -34,5 +34,4 @@ spec:
   targetNamespace: xray
   values:
     xray:
-      config:
-        existingSecret: "xray-config"
+      existingSecret: "xray-config"
