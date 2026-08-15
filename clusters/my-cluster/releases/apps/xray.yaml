@@ -6,9 +6,6 @@ metadata:
   namespace: xray
 spec:
   interval: 5m
-  dependsOn:
-    - name: xray-config
-      namespace: xray
   driftDetection:
     mode: enabled
     ignore:
