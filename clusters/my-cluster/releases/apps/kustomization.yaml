@@ -22,4 +22,4 @@ resources:
 - longhorn-ingressroute.yaml
 - cnpg.yaml
 - pgadmin.yaml
-- xray.yaml
+- proxy.yaml
