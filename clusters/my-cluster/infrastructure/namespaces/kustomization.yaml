@@ -32,3 +32,4 @@ resources:
 - apps-pgadmin.yaml
 - pgadmin-middleware.yaml
 - twitch-sub-bot.yaml
+- xray.yaml

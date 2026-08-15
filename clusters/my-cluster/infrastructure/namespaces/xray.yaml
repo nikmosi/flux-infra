@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xray
+  labels:
+    name: xray
+    app.kubernetes.io/part-of: local-kube
