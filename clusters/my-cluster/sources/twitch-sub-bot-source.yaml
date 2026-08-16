@@ -10,4 +10,4 @@ spec:
     branch: main
   secretRef:
     name: twitch-sub-bot-source
-  url: ssh://git@forgejo-ssh.apps-forgejo.svc.cluster.local/nikmosi/apps-charts.git
+  url: ssh://git@forgejo-ssh.apps-forgejo.svc.cluster.local/nikmosi/twitch-sub-bot.git
