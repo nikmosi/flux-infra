@@ -25,3 +25,21 @@ spec:
     ref: "refs/heads/main"
     path: "clusters/my-cluster"
     pullSecret: "flux-system"
+  kustomize:
+    patches:
+      - target:
+          kind: Deployment
+          name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
+        patch: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: unused
+          spec:
+            template:
+              spec:
+                containers:
+                  - name: manager
+                    resources:
+                      limits:
+                        cpu: 500m
