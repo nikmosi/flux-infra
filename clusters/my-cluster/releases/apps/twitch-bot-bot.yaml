@@ -1,4 +1,3 @@
----
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -36,4 +35,4 @@ spec:
     imagePullSecrets:
       - name: zot
     image:
-      tag: "v0.2.5"  # {"$imagepolicy": "flux-system:twitch-sub-bot"}
+      tag: "zot.xinfra.ru/twitch-sub-check:v0.2.5" # {"$imagepolicy": "flux-system:twitch-sub-bot"}
