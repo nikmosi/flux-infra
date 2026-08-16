@@ -50,13 +50,18 @@ spec:
                   name: dind-sock
                   mountPath: /var/run
               - op: add
-                path: /spec/template/spec/containers/1/command
+                path: /spec/template/spec/containers/1/args
                 value:
-                  - sh
-                  - -c
-                  - |
-                    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1410 2>/dev/null || true
-                    exec dockerd-entrypoint.sh dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376 --mtu=1450
+                  - "--mtu=1450"
+              - op: add
+                path: /spec/template/spec/containers/1/lifecycle
+                value:
+                  postStart:
+                    exec:
+                      command:
+                        - sh
+                        - -c
+                        - "iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1410 2>/dev/null || true"
               - op: add
                 path: /spec/template/spec/volumes/-
                 value:
