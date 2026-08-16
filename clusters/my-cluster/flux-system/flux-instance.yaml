@@ -31,6 +31,13 @@ spec:
           kind: Deployment
           name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
         patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --concurrent=12
+      - target:
+          kind: Deployment
+          name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
+        patch: |
           apiVersion: apps/v1
           kind: Deployment
           metadata:
