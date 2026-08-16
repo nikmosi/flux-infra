@@ -33,6 +33,7 @@ spec:
   releaseName: twitch
   targetNamespace: twitch-sub-bot
   values:
-    imagePullSecrets: [zot]
+    imagePullSecrets:
+      - name: zot
     image:
       tag: "v0.2.5"
