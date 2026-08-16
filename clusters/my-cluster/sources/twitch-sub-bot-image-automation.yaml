@@ -5,7 +5,7 @@ metadata:
   name: twitch-sub-bot
   namespace: flux-system
 spec:
-  image: ghcr.io/nikmosi/twitch-sub-bot
+  image: ghcr.io/nikmosi/twitch-sub-check
   interval: 5m
   secretRef:
     name: zot
