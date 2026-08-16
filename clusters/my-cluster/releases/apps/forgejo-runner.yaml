@@ -50,6 +50,10 @@ spec:
                   name: dind-sock
                   mountPath: /var/run
               - op: add
+                path: /spec/template/spec/containers/1/args
+                value:
+                  - "--mtu=1450"
+              - op: add
                 path: /spec/template/spec/volumes/-
                 value:
                   name: dind-sock
