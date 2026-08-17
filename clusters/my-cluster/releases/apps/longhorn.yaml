@@ -7,12 +7,12 @@ metadata:
 spec:
   chart:
     spec:
-      chart: longhorn
-      reconcileStrategy: ChartVersion
+      chart: chart
+      reconcileStrategy: Revision
       sourceRef:
-        kind: HelmRepository
+        kind: GitRepository
         name: longhorn
-      version: v1.12.0
+
   interval: 1m0s
   driftDetection:
     mode: enabled
