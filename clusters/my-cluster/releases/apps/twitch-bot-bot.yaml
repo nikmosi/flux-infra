@@ -35,4 +35,4 @@ spec:
     imagePullSecrets:
       - name: zot
     image:
-      tag: "v0.2.10" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
+      tag: "v0.2.14" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
