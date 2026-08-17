@@ -1,0 +1,30 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- apps-adguard.yaml
+- apps-authelia.yaml
+- apps-forgejo-runner.yaml
+- apps-forgejo.yaml
+- apps-gickup.yaml
+- apps-goldilocks.yaml
+- apps-kube-prometheus-stack.yaml
+- apps-lldap.yaml
+- apps-noise.yaml
+- apps-ntfy.yaml
+- apps-pgadmin.yaml
+- apps-supersync.yaml
+- apps-warden.yaml
+- apps-zot.yaml
+- cert-manager.yaml
+- crowdsec.yaml
+- database.yaml
+- forgesync.yaml
+- goldilocks-middleware.yaml
+- longhorn-system-middleware.yaml
+- longhorn-system.yaml
+- monitoring.yaml
+- pgadmin-middleware.yaml
+- proxy.yaml
+- reflector.yaml
+- twitch-sub-bot.yaml
