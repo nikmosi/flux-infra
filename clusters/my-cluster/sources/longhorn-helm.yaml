@@ -1,11 +1,12 @@
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
+kind: HelmRepository
 metadata:
   name: longhorn
-  namespace: longhorn-system
+  namespace: flux-system
 spec:
-  interval: 1h
-  url: https://github.com/longhorn/charts.git
-  ref:
-    tag: v1.12.0
+  interval: 10m0s
+  type: oci
+  url: oci://zot.xinfra.ru/charts
+  secretRef:
+    name: zot

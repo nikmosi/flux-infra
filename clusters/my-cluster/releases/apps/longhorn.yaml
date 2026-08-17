@@ -7,11 +7,14 @@ metadata:
 spec:
   chart:
     spec:
-      chart: chart
-      reconcileStrategy: Revision
+      chart: longhorn
+      reconcileStrategy: ChartVersion
       sourceRef:
-        kind: GitRepository
+        kind: HelmRepository
         name: longhorn
+        namespace: flux-system
+      version: 1.12.0
+
 
   interval: 1m0s
   driftDetection:
