@@ -33,6 +33,7 @@ spec:
   releaseName: gickup
   targetNamespace: apps-gickup
   values:
+    backoffLimit: 6
     existingSecret: gickup-secrets
     image:
       pullPolicy: Always
