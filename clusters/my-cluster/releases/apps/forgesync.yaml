@@ -44,7 +44,24 @@ spec:
         value: Asia/Novosibirsk
     targets:
       github:
-        enabled: false
+        enabled: true
+        target: "github"
+        env:
+          - name: SOURCE_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: FORGEJO_TOKEN
+          - name: TARGET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: GITHUB_TOKEN
+          - name: MIRROR_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: GITHUB_TOKEN
       codeberg:
         enabled: true
         target: "codeberg"
