@@ -35,15 +35,44 @@ spec:
   values:
     imagePullSecrets:
       - name: zot
-    image:
-      pullPolicy: Always
-    source: "https://git.xinfra.ru"
+    podSecurityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      runAsGroup: 0
+    source: "https://git.xinfra.ru/api/v1"
     env:
       - name: TZ
         value: Asia/Novosibirsk
+      - name: UV_CACHE_DIR
+        value: /tmp/uv
+      - name: TMPDIR
+        value: /tmp
     targets:
       github:
-        enabled: false
+        target: "github"
+        existingSecret: "targets-creds"
       codeberg:
         target: "codeberg"
         existingSecret: "targets-creds"
+        env:
+          - name: TZ
+            value: Asia/Novosibirsk
+          - name: UV_CACHE_DIR
+            value: /tmp/uv
+          - name: TMPDIR
+            value: /tmp
+          - name: SOURCE_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: FORGEJO_TOKEN
+          - name: TARGET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: CODEBERG_TOKEN
+          - name: MIRROR_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: targets-creds
+                key: CODEBERG_TOKEN
