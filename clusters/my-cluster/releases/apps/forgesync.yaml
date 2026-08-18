@@ -48,7 +48,6 @@ spec:
       codeberg:
         enabled: true
         target: "codeberg"
-        existingSecret: "targets-creds"
         env:
           - name: SOURCE_TOKEN
             valueFrom:
