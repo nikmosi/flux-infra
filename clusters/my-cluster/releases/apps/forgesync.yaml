@@ -42,6 +42,8 @@ spec:
       - name: TZ
         value: Asia/Novosibirsk
     targets:
+      github:
+        enabled: false
       codeberg:
         target: "codeberg"
         existingSecret: "targets-creds"
