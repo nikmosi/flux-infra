@@ -99,6 +99,17 @@ spec:
         path: "/data"
         accessMode: "ReadWriteOnce"
 
+    database:
+      type: "postgresql"
+      host: "lab-postgres-rw.database.svc.cluster.local"
+      port: 5432
+      dbName: "vaultwarden"
+      username: "vaultwarden"
+      existingSecret: "vaultwarden"
+      existingSecretPasswordKey: "db-password"
+      connectionRetries: 15
+      maxConnections: 10
+
     domain: "https://warden.xinfra.ru"
     signupsAllowed: false
     signupsVerify: "true"
