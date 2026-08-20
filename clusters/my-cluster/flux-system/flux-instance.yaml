@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   distribution:
-    version: "2.x"
+    version: "v2.9.4"
     registry: "ghcr.io/fluxcd"
   components:
     - source-controller
@@ -29,14 +29,14 @@ spec:
     patches:
       - target:
           kind: Deployment
-          name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
+          name: "(source-controller|kustomize-controller|helm-controller)"
         patch: |
           - op: add
             path: /spec/template/spec/containers/0/args/-
             value: --concurrent=12
       - target:
           kind: Deployment
-          name: "(source-controller|kustomize-controller|helm-controller|notification-controller|image-reflector-controller|image-automation-controller)"
+          name: "(kustomize-controller|helm-controller)"
         patch: |
           apiVersion: apps/v1
           kind: Deployment
@@ -48,5 +48,9 @@ spec:
                 containers:
                   - name: manager
                     resources:
+                      requests:
+                        cpu: 100m
+                        memory: 256Mi
                       limits:
-                        cpu: 500m
+                        cpu: 1000m
+                        memory: 1Gi
