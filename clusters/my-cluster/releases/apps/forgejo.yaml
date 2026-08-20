@@ -49,6 +49,14 @@ spec:
         accessModes:
           - ReadWriteMany
         storageClass: "longhorn"
+      extraVolumes:
+        - name: custom-templates
+          configMap:
+            name: forgejo-custom-templates
+      extraContainerVolumeMounts:
+        - name: custom-templates
+          mountPath: /data/gitea/templates/home.tmpl
+          subPath: home.tmpl
       gitea:
         config:
           database:
