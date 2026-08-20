@@ -5,7 +5,7 @@ metadata:
   name: forgejo
   namespace: apps-forgejo
 spec:
-  interval: 5m
+  interval: 10m
   driftDetection:
     mode: enabled
     ignore:
@@ -41,14 +41,38 @@ spec:
           secretKeyRef:
             name: forgejo-db-secret
             key: password
+
     forgejo:
       replicaCount: 2
+
+      podSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
+
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 2000m
+          memory: 1536Mi
+
       persistence:
         claimName: forgejo-shared-storage-rwx
         size: 10Gi
         accessModes:
           - ReadWriteMany
         storageClass: "longhorn"
+
       extraVolumes:
         - name: custom-templates
           configMap:
@@ -57,6 +81,7 @@ spec:
         - name: custom-templates
           mountPath: /data/gitea/templates/home.tmpl
           subPath: home.tmpl
+
       gitea:
         config:
           database:
@@ -68,7 +93,16 @@ spec:
             LFS_START_SERVER: true
           lfs:
             ENABLED: true
+
     valkey:
+      resources:
+        requests:
+          cpu: 15m
+          memory: 64Mi
+        limits:
+          cpu: 2000m
+          memory: 256Mi
       persistence:
         storageClassName: "longhorn"
+
     ingress: {}
