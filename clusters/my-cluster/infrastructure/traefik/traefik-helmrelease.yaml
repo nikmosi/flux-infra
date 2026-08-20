@@ -17,9 +17,11 @@ spec:
         target:
           kind: ".*"
   install:
+    timeout: 10m
     remediation:
       retries: 3
   upgrade:
+    timeout: 10m
     strategy:
       name: RetryOnFailure
       retryInterval: 5m
@@ -29,7 +31,7 @@ spec:
   chart:
     spec:
       chart: traefik
-      version: "41.x"
+      version: "41.2.0"
       sourceRef:
         kind: HelmRepository
         name: traefik
@@ -37,6 +39,43 @@ spec:
       interval: 1h
   targetNamespace: traefik
   values:
+    deployment:
+      replicas: 2
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      fsGroup: 65532
+
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: traefik
+              topologyKey: kubernetes.io/hostname
+
     providers:
       kubernetesCRD:
         allowCrossNamespace: true
