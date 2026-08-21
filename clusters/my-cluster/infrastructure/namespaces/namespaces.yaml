@@ -61,13 +61,3 @@ metadata:
   name: apps
   labels:
     pod-security.kubernetes.io/enforce: restricted
-
-
-# ========================================================================
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: crowdsec
-  labels:
-    name: crowdsec
