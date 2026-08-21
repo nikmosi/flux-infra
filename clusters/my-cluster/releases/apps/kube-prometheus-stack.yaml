@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kube-prometheus-stack
-  namespace: apps-kube-prometheus-stack
+  namespace: monitoring
 spec:
   interval: 5m
   driftDetection:
@@ -163,7 +163,7 @@ spec:
         storageClassName: longhorn
         accessModes:
           - ReadWriteOnce
-        size: 5Gi
+        size: 1Gi
 
       initChownData:
         enabled: false
@@ -359,8 +359,8 @@ spec:
         image:
           pullPolicy: Always
         # Retention is capped by both time and disk usage; whichever is hit first wins.
-        retention: 90d
-        retentionSize: 16GiB
+        retention: 14d
+        retentionSize: 12GiB
         walCompression: true
 
         ruleSelectorNilUsesHelmValues: false
@@ -399,7 +399,7 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 50Gi
+                  storage: 24Gi
 
     thanosRuler:
       enabled: false
