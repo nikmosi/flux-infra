@@ -32,6 +32,9 @@ spec:
         namespace: flux-system
       interval: 1h
   values:
+    podSecurityContext:
+      seccompProfile:
+        type: RuntimeDefault
     replicaCount: 1
 
     image:
