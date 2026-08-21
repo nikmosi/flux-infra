@@ -67,16 +67,8 @@
       ];
       settings = {
         strict = true;
-        configuration = ''
-          extends: default
-
-          rules:
-            comments-indentation: disable
-            document-start: disable
-            indentation: disable
-            line-length: disable
-            truthy: disable
-        '';
+        # единый источник правил: nvim-lint тоже подхватывает .yamllint из корня
+        configPath = ".yamllint";
       };
     };
 
