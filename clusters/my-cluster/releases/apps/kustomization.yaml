@@ -22,7 +22,7 @@ resources:
 - ntfy.yaml
 - pgadmin.yaml
 - supersync.yaml
-- twitch-bot-bot.yaml
+- twitch-bot.yaml
 - vaultwarden.yaml
 - xray.yaml
 - zot.yaml
