@@ -75,13 +75,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-forgejo
-  labels:
-    name: apps-forgejo
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-ntfy
   labels:
     name: apps-ntfy
@@ -96,20 +89,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-zot
-  labels:
-    name: apps-zot
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: crowdsec
   labels:
     name: crowdsec
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: forgesync
-  labels:
-    name: forgesync
