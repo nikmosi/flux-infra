@@ -39,6 +39,12 @@ spec:
           secretKeyRef:
             name: forgejo-db-secret
             key: password
+      - name: FORGEJO__SESSION__PROVIDER_CONFIG
+        value: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/1?pool_size=100&idle_timeout=180s
+      - name: FORGEJO__QUEUE__CONN_STR
+        value: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/2?pool_size=100&idle_timeout=180s
+      - name: FORGEJO__CACHE__HOST
+        value: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
 
     forgejo:
       replicaCount: 2
@@ -89,6 +95,15 @@ spec:
             HOST: lab-postgres-rw.database.svc.cluster.local:5432
             NAME: forgejo
             USER: forgejo
+          session:
+            PROVIDER: redis
+            PROVIDER_CONFIG: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/1?pool_size=100&idle_timeout=180s
+          queue:
+            TYPE: redis
+            CONN_STR: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/2?pool_size=100&idle_timeout=180s
+          cache:
+            ADAPTER: redis
+            HOST: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
           server:
             LFS_START_SERVER: true
           lfs:
