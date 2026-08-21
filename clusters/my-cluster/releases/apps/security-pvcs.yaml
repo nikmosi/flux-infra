@@ -39,7 +39,7 @@ spec:
   resources:
     requests:
       storage: 15Gi
-  volumeName: pvc-53d1a4a8-093a-4c3a-871f-2bb3507a2a01
+  volumeName: pvc-5367d775-5f67-4574-bc65-0148411cf7bc
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
