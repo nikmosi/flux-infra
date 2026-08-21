@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
 - namespaces/
 - storage/
-- traefik/namespace.yaml
 - traefik/traefik-helmrelease.yaml
 - traefik/tlsoption-strictverify.yaml
 - flux-operator-ingress.yaml
