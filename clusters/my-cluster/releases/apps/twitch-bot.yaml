@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: twitch
-  namespace: twitch-sub-bot
+  namespace: apps
 spec:
   interval: 5m
   driftDetection:
@@ -31,6 +31,10 @@ spec:
       interval: 1h
   values:
     imagePullSecrets:
-      - name: zot
+      - name: twitch-bot-zot
+    database:
+      existingSecret: "twitch-bot-db-creds"
+    creds:
+      existingSecret: "twitch-bot-creds"
     image:
       tag: "v0.2.14" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
