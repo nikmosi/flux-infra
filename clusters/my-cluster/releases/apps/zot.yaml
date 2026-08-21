@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: zot
-  namespace: apps-zot
+  namespace: developer-tools
 spec:
   dependsOn:
     - name: authelia
@@ -36,6 +36,19 @@ spec:
         namespace: flux-system
       interval: 1h
   values:
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 10000
+      runAsGroup: 10000
+      fsGroup: 10000
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
     replicaCount: 1
     image:
       repository: ghcr.io/project-zot/zot

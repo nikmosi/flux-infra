@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: forgejo
-  namespace: apps-forgejo
+  namespace: developer-tools
 spec:
   interval: 10m
   driftDetection:
@@ -48,6 +48,8 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 
       securityContext:
         allowPrivilegeEscalation: false
