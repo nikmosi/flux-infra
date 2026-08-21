@@ -103,18 +103,10 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-noise
-  labels:
-    name: apps-noise
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-ntfy
   labels:
     name: apps-ntfy
 ---
-
 apiVersion: v1
 kind: Namespace
 metadata:
