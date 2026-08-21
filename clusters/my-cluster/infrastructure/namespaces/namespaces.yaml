@@ -89,13 +89,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-forgejo-runner
-  labels:
-    name: apps-forgejo-runner
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-goldilocks
   labels:
     name: apps-goldilocks
