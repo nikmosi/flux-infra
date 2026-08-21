@@ -189,10 +189,3 @@ metadata:
   name: proxy
   labels:
     name: proxy
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: reflector
-  labels:
-    name: reflector
