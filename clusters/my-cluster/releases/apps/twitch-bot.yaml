@@ -33,7 +33,7 @@ spec:
     imagePullSecrets:
       - name: twitch-bot-zot
     database:
-      existingSecret: "twitch-bot-db-creds"
+      existingSecret: "twich-bot-db-creds"
     creds:
       existingSecret: "twitch-bot-creds"
     image:
