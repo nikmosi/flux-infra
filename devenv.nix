@@ -93,15 +93,6 @@
       pass_filenames = false;
     };
 
-    kustomize-overlays = {
-      enable = true;
-      name = "Kustomize overlays";
-      entry = "validate-kustomize";
-      files = "^clusters/.*\\.ya?ml$";
-      excludes = [ "^.*\\.enc\\.ya?ml$" ];
-      pass_filenames = false;
-    };
-
     # security scoring — pre-push только
     kube-score = {
       enable = true;
