@@ -135,7 +135,7 @@
     validate-rendered.exec = ''
       set -euo pipefail
 
-      tmp="$(mktemp)"
+      tmp="$(mktemp --suffix=.yaml)"
       trap 'rm -f "$tmp"' EXIT
 
       if (( $# > 0 )); then
