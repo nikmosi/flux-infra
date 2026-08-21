@@ -27,8 +27,6 @@ spec:
           - "/metadata/annotations"
         target:
           kind: ".*"
-  releaseName: longhorn
-  targetNamespace: longhorn-system
   install:
     timeout: 20m0s
   upgrade:

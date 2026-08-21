@@ -31,8 +31,6 @@ spec:
         name: rm3l
         namespace: flux-system
       interval: 1h
-  releaseName: adguard
-  targetNamespace: apps-adguard
 
   # Inject bcrypt password hash from SOPS-encrypted secret into bootstrapConfig.users
   valuesFrom:

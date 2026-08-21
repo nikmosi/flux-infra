@@ -33,8 +33,6 @@ spec:
         name: runix
         namespace: flux-system
       interval: 1h
-  releaseName: pgadmin
-  targetNamespace: apps-pgadmin
   values:
     env:
       email: nikmosi@xinfra.ru

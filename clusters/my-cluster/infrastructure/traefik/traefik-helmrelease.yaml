@@ -27,7 +27,6 @@ spec:
       retryInterval: 5m
     remediation:
       retries: 3
-  releaseName: traefik
   chart:
     spec:
       chart: traefik
@@ -37,7 +36,6 @@ spec:
         name: traefik
         namespace: flux-system
       interval: 1h
-  targetNamespace: traefik
   values:
     deployment:
       replicas: 2

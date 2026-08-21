@@ -31,8 +31,6 @@ spec:
         name: vaultwarden
         namespace: flux-system
       interval: 1h
-  releaseName: vaultwarden
-  targetNamespace: apps-warden
   values:
     image:
       registry: docker.io

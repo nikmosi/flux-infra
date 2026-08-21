@@ -30,8 +30,6 @@ spec:
         name: apps-charts
         namespace: flux-system
       interval: 1h
-  releaseName: forgejo
-  targetNamespace: apps-forgejo
   values:
     extraEnv:
       - name: TZ

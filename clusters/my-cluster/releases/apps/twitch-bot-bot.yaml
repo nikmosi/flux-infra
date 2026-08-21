@@ -29,8 +29,6 @@ spec:
         name: twitch-sub-bot
         namespace: flux-system
       interval: 1h
-  releaseName: twitch
-  targetNamespace: twitch-sub-bot
   values:
     imagePullSecrets:
       - name: zot

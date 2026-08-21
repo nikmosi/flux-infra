@@ -35,8 +35,6 @@ spec:
         name: project-zot
         namespace: flux-system
       interval: 1h
-  releaseName: zot
-  targetNamespace: apps-zot
   values:
     replicaCount: 1
     image:

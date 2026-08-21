@@ -30,8 +30,6 @@ spec:
         name: kube-prometheus-stack
         namespace: flux-system
       interval: 1h
-  releaseName: kube-prometheus-stack
-  targetNamespace: apps-kube-prometheus-stack
   values:
     fullnameOverride: kube-prometheus-stack
 

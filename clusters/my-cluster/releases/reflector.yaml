@@ -22,7 +22,6 @@ spec:
   upgrade:
     remediation:
       retries: 3
-  releaseName: reflector
   chart:
     spec:
       chart: reflector
@@ -31,7 +30,6 @@ spec:
         name: emberstack
         namespace: flux-system
       interval: 1h
-  targetNamespace: reflector
   values:
     replicaCount: 1
 
