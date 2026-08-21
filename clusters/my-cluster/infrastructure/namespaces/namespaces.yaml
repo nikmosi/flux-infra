@@ -88,13 +88,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-kube-prometheus-stack
-  labels:
-    name: apps-kube-prometheus-stack
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-lldap
   labels:
     name: apps-lldap
