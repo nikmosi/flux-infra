@@ -60,13 +60,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-adguard
-  labels:
-    name: apps-adguard
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-authelia
   labels:
     name: apps-authelia
@@ -203,10 +196,3 @@ metadata:
   name: reflector
   labels:
     name: reflector
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: twitch-sub-bot
-  labels:
-    name: twitch-sub-bot
