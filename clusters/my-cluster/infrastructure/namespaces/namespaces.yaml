@@ -75,20 +75,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-ntfy
-  labels:
-    name: apps-ntfy
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: apps-supersync
-  labels:
-    name: apps-supersync
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: crowdsec
   labels:
     name: crowdsec

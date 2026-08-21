@@ -421,7 +421,7 @@ spec:
             from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 
-            NTFY_URL = os.environ.get("NTFY_URL", "http://ntfy.apps-ntfy.svc.cluster.local/")
+            NTFY_URL = os.environ.get("NTFY_URL", "http://ntfy.apps.svc.cluster.local/")
             NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "grafana")
             TOKEN_FILE = os.environ.get("NTFY_TOKEN_FILE", "/etc/ntfy-token/token")
             GRAFANA_URL = os.environ.get("GRAFANA_URL", "https://grafana.xinfra.ru").rstrip("/")
@@ -644,7 +644,7 @@ spec:
                     - name: TZ
                       value: Asia/Novosibirsk
                     - name: NTFY_URL
-                      value: http://ntfy.apps-ntfy.svc.cluster.local/
+                      value: http://ntfy.apps.svc.cluster.local/
                     - name: NTFY_TOPIC
                       value: grafana
                     - name: NTFY_TOKEN_FILE

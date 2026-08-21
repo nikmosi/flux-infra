@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: supersync
-  namespace: apps-supersync
+  namespace: apps
 spec:
   suspend: true
   interval: 5m

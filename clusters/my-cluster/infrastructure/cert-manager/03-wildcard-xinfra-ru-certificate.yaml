@@ -9,9 +9,9 @@ spec:
   secretTemplate:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "networking,monitoring,security,apps-.*,flux-system,longhorn-system,developer-tools"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "networking,monitoring,security,apps,apps-.*,flux-system,longhorn-system,developer-tools"
       reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "networking,monitoring,security,apps-.*,flux-system,longhorn-system,developer-tools"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "networking,monitoring,security,apps,apps-.*,flux-system,longhorn-system,developer-tools"
   issuerRef:
     name: letsencrypt-cloudflare
     kind: ClusterIssuer
