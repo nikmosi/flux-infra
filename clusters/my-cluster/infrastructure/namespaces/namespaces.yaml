@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: monitoring
   labels:
-    name: monitoring
+    pod-security.kubernetes.io/enforce: restricted
 ---
 apiVersion: v1
 kind: Namespace
@@ -19,13 +19,6 @@ metadata:
   name: security
   labels:
     pod-security.kubernetes.io/enforce: restricted
-# ---
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: monitoring
-#   labels:
-#     pod-security.kubernetes.io/enforce: restricted
 ---
 apiVersion: v1
 kind: Namespace
