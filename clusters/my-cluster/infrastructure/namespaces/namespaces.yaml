@@ -121,13 +121,7 @@ metadata:
   labels:
     name: apps-ntfy
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: apps-pgadmin
-  labels:
-    name: apps-pgadmin
----
+
 apiVersion: v1
 kind: Namespace
 metadata:
