@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: goldilocks
-  namespace: apps-goldilocks
+  namespace: monitoring
 spec:
   interval: 5m
   driftDetection:
@@ -92,7 +92,7 @@ spec:
         enabled: true
         ingressClassName: traefik
         annotations:
-          traefik.ingress.kubernetes.io/router.middlewares: apps-goldilocks-forwardauth-authelia@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: monitoring-forwardauth-authelia@kubernetescrd
           traefik.ingress.kubernetes.io/router.tls.options: networking-mtls-strict@kubernetescrd
         hosts:
           - host: goldilocks.xinfra.ru
