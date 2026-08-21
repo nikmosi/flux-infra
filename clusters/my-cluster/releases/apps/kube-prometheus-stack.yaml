@@ -98,7 +98,7 @@ spec:
           - name: "null"
           - name: ntfy
             webhook_configs:
-              - url: http://alertmanager-ntfy-adapter.apps-kube-prometheus-stack.svc.cluster.local:8080/alertmanager
+              - url: http://alertmanager-ntfy-adapter.monitoring.svc.cluster.local:8080/alertmanager
                 send_resolved: true
         templates:
           - /etc/alertmanager/config/*.tmpl
@@ -409,10 +409,7 @@ spec:
         kind: ConfigMap
         metadata:
           name: alertmanager-ntfy-adapter
-          namespace: apps-kube-prometheus-stack
-          labels:
-            app.kubernetes.io/name: alertmanager-ntfy-adapter
-            app.kubernetes.io/part-of: kube-prometheus-stack
+          namespace: monitoring
         data:
           adapter.py: |
             import json
@@ -623,20 +620,13 @@ spec:
         kind: Deployment
         metadata:
           name: alertmanager-ntfy-adapter
-          namespace: apps-kube-prometheus-stack
-          labels:
-            app.kubernetes.io/name: alertmanager-ntfy-adapter
-            app.kubernetes.io/part-of: kube-prometheus-stack
+          namespace: monitoring
         spec:
           replicas: 1
           selector:
             matchLabels:
               app.kubernetes.io/name: alertmanager-ntfy-adapter
           template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: alertmanager-ntfy-adapter
-                app.kubernetes.io/part-of: kube-prometheus-stack
             spec:
               automountServiceAccountToken: false
               containers:
@@ -714,10 +704,7 @@ spec:
         kind: Service
         metadata:
           name: alertmanager-ntfy-adapter
-          namespace: apps-kube-prometheus-stack
-          labels:
-            app.kubernetes.io/name: alertmanager-ntfy-adapter
-            app.kubernetes.io/part-of: kube-prometheus-stack
+          namespace: monitoring
         spec:
           type: ClusterIP
           selector:
