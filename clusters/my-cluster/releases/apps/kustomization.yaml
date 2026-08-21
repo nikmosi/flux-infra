@@ -20,6 +20,7 @@ resources:
 - longhorn.yaml
 - ntfy.yaml
 - pgadmin.yaml
+- security-pvcs.yaml
 - supersync.yaml
 - twitch-bot.yaml
 - vaultwarden.yaml

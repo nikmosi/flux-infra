@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   forwardAuth:
-    address: http://authelia.apps-authelia.svc.cluster.local/api/authz/forward-auth
+    address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
     trustForwardHeader: true
     authResponseHeaders:
       - Remote-User

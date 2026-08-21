@@ -7,9 +7,9 @@ metadata:
 spec:
   dependsOn:
     - name: authelia
-      namespace: apps-authelia
+      namespace: security
     - name: lldap
-      namespace: apps-lldap
+      namespace: security
   interval: 5m
   driftDetection:
     mode: enabled
@@ -203,7 +203,7 @@ spec:
             "auth": {
               "ldap": {
                 "credentialsFile": "/etc/zot/ldap/config-ldap-credentials.json",
-                "address": "lldap.apps-lldap.svc.cluster.local",
+                "address": "lldap.security.svc.cluster.local",
                 "port": 3890,
                 "insecure": true,
                 "startTLS": false,

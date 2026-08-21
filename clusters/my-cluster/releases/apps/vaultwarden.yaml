@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: vaultwarden
-  namespace: apps-warden
+  namespace: security
 spec:
   interval: 10m
   driftDetection:

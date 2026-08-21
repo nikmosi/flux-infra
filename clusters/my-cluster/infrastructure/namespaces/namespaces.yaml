@@ -75,13 +75,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-authelia
-  labels:
-    name: apps-authelia
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-forgejo
   labels:
     name: apps-forgejo
@@ -96,13 +89,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-lldap
-  labels:
-    name: apps-lldap
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-ntfy
   labels:
     name: apps-ntfy
@@ -113,13 +99,6 @@ metadata:
   name: apps-supersync
   labels:
     name: apps-supersync
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: apps-warden
-  labels:
-    name: apps-warden
 ---
 apiVersion: v1
 kind: Namespace
