@@ -33,4 +33,4 @@ spec:
   values:
     ingress:
       annotations:
-        traefik.ingress.kubernetes.io/router.tls.options: traefik-mtls-strict@kubernetescrd
+        traefik.ingress.kubernetes.io/router.tls.options: networking-mtls-strict@kubernetescrd

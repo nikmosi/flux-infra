@@ -33,5 +33,5 @@ spec:
   tls:
     options:
       name: mtls-strict
-      namespace: traefik
+      namespace: networking
     secretName: wildcard-xinfra-ru-tls

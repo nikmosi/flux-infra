@@ -2,7 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: TLSOption
 metadata:
   name: mtls-strict
-  namespace: traefik
+  namespace: networking
 spec:
   clientAuth:
     clientAuthType: RequireAndVerifyClientCert
