@@ -81,13 +81,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: apps-gickup
-  labels:
-    name: apps-gickup
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: apps-goldilocks
   labels:
     name: apps-goldilocks
