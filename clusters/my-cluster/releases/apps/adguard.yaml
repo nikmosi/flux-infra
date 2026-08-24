@@ -46,7 +46,12 @@ spec:
       tag: "v0.107.43"
 
     bootstrapConfig:
-      clients: []
+      clients:
+        runtime_sources:
+          whois: true
+          dhcp: true
+          etc_hosts: true
+        persistent: []
       bind_host: "0.0.0.0"
       bind_port: 80
 
@@ -65,7 +70,7 @@ spec:
       log_localtime: false
       verbose: false
       web_session_ttl: 720
-      schema_version: 28
+      schema_version: 27
 
       dns:
         edns_client_subnet:
