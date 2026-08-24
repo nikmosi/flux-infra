@@ -46,6 +46,17 @@ spec:
       tag: "v0.107.43"
 
     bootstrapConfig:
+      # overrides chart default `clients: []` (seq) which AdGuard Home cannot parse;
+      # keys per AGH v0.107.43 schema (>= v0.107.7)
+      clients:
+        persistent: []
+        runtime_sources:
+          whois: true
+          arp: true
+          rdns: true
+          dhcp: true
+          hosts: true
+
       bind_host: "0.0.0.0"
       bind_port: 80
 
