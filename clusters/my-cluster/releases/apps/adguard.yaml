@@ -46,12 +46,6 @@ spec:
       tag: "v0.107.43"
 
     bootstrapConfig:
-      clients:
-        runtime_sources:
-          whois: true
-          dhcp: true
-          etc_hosts: true
-        persistent: []
       bind_host: "0.0.0.0"
       bind_port: 80
 
