@@ -37,4 +37,4 @@ spec:
     creds:
       existingSecret: "twitch-bot-creds"
     image:
-      tag: "v0.2.14" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
+      tag: "v0.2.16" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
