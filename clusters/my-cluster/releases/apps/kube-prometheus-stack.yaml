@@ -258,14 +258,31 @@ spec:
               - test -d /proc/1
           initialDelaySeconds: 10
           periodSeconds: 30
+      readinessProbe:
+        httpGet:
+          path: /api/health
+          port: 3000
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+
+      livenessProbe:
+        httpGet:
+          path: /api/health
+          port: 3000
+        initialDelaySeconds: 120
+        periodSeconds: 10
+        timeoutSeconds: 30
+        failureThreshold: 10
 
       resources:
         requests:
-          cpu: 50m
-          memory: 448Mi
+          cpu: 100m
+          memory: 512Mi
         limits:
-          cpu: 200m
-          memory: 768Mi
+          cpu: 1000m
+          memory: 1024Mi
 
     kubeApiServer:
       enabled: true
