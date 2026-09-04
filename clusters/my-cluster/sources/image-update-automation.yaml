@@ -1,0 +1,25 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: flux-system
+  namespace: flux-system
+spec:
+  interval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: fluxcd@xinfra.ru
+        name: fluxcdbot
+      messageTemplate: "chroma(ci): update image tags [bot]"
+    push:
+      branch: main
+  update:
+    path: ./clusters/my-cluster/releases/apps
+    strategy: Setters
