@@ -137,9 +137,6 @@ spec:
         pullPolicy: Always
       containerSecurityContext:
         readOnlyRootFilesystem: true
-      extraEmptyDirMounts:
-        - name: tmp
-          mountPath: /tmp
       envValueFrom:
         GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
           secretKeyRef:
