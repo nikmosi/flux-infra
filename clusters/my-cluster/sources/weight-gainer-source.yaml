@@ -1,0 +1,13 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: weight-gainer
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: weight-gainer-source
+  url: ssh://git@forgejo-ssh.developer-tools.svc.cluster.local/nikmosi/weight-gainer.git
