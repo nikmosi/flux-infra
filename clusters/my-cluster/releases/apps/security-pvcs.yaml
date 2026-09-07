@@ -21,11 +21,11 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: longhorn-low
   resources:
     requests:
       storage: 1Gi
-  volumeName: pvc-2c9c41df-eb1c-4605-a543-14b94372af45
+  volumeName: pvc-f2da8f49-5956-433b-a865-5644cbdf071f
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

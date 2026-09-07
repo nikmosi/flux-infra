@@ -31,7 +31,7 @@ from rich.prompt import Confirm, Prompt
 from rich.syntax import Syntax
 from rich.table import Table
 
-LONGHORN_SC = "longhorn"
+LONGHORN_SC = "longhorn-low"
 MIGRATOR_POD = "data-migrator"
 MIGRATOR_IMAGE = "alpine:latest"
 MIGRATOR_TIMEOUT_S = 1800  # 30 минут максимум на один PVC
@@ -119,6 +119,7 @@ def print_summary(
     source_size: str,
     target_size: str,
     dry_run: bool,
+    target_sc: str = LONGHORN_SC,
 ) -> None:
     table = Table(title="Сводка миграции", border_style="bold blue", show_header=True)
     table.add_column("Параметр", style="bold cyan", no_wrap=True)
@@ -131,21 +132,21 @@ def print_summary(
         table.add_row("Target Size", f"[bold yellow]{target_size}[/bold yellow]")
     else:
         table.add_row("Target Size", target_size)
-    table.add_row("Target SC", f"[bold green]{LONGHORN_SC}[/bold green]")
+    table.add_row("Target SC", f"[bold green]{target_sc}[/bold green]")
     if dry_run:
         table.add_row("Режим", "[bold yellow]DRY-RUN[/bold yellow]")
     console.print(table)
 
 
 def print_final_instructions(
-    ns: str, wtype: str, source_size: str, target_size: str
+    ns: str, wtype: str, source_size: str, target_size: str, target_sc: str = LONGHORN_SC
 ) -> None:
     lines = [
         "[bold green]Миграция PVC завершена.[/bold green]",
         "",
         "[bold]ДАЛЬНЕЙШИЕ ШАГИ (вручную):[/bold]",
         f"  1. Обновите [cyan]storageClassName[/cyan] в HelmRelease в git: "
-        f"[bold]{LONGHORN_SC}[/bold]",
+        f"[bold]{target_sc}[/bold]",
     ]
     if source_size != target_size:
         lines.append(
@@ -201,7 +202,13 @@ def choose_workload_type() -> str:
     return ["deployment", "statefulset"][idx]
 
 
+_AUTO_CONFIRM = False
+
+
 def confirm(prompt: str, default: bool = False) -> bool:
+    if _AUTO_CONFIRM:
+        console.print(f"[bold]{prompt}[/bold] [dim](--yes -> True)[/dim]")
+        return True
     return Confirm.ask(f"[bold]{prompt}[/bold]", default=default, console=console)
 
 
@@ -374,10 +381,23 @@ metadata:
   namespace: {namespace}
 spec:
   restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: migrator
       image: {MIGRATOR_IMAGE}
       command: ["sh", "-c", "cp -av /source/. /destination/ && echo DONE"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
       volumeMounts:
         - name: source
           mountPath: /source
@@ -445,6 +465,7 @@ def migrate_pvc(
     wtype: str,
     workload: str,
     target_size: str | None = None,
+    target_sc: str = LONGHORN_SC,
 ) -> None:
     total_steps = 9
     ns = runner.namespace
@@ -486,11 +507,11 @@ def migrate_pvc(
         + (f" -> [bold yellow]{target_size}[/bold yellow]" if size_changed else "")
         + f", accessModes: [bold]{access_modes}[/bold], "
         f"SC: [bold yellow]{current_sc}[/bold yellow]"
-        + (f" -> [bold green]{LONGHORN_SC}[/bold green]" if current_sc != LONGHORN_SC else "")
+        + (f" -> [bold green]{target_sc}[/bold green]" if current_sc != target_sc else "")
     )
 
-    if current_sc == LONGHORN_SC and not confirm(
-        f"PVC {pvc_name} уже использует storageClassName={LONGHORN_SC}. "
+    if current_sc == target_sc and not confirm(
+        f"PVC {pvc_name} уже использует storageClassName={target_sc}. "
         "Продолжить миграцию?",
         default=False,
     ):
@@ -510,8 +531,8 @@ def migrate_pvc(
         _wait_pods_gone(runner, ns, workload, wtype)
 
     # --- Шаг 2 ---
-    step(2, total_steps, f"Создание временного PVC {temp_pvc} (longhorn)")
-    manifest = build_pvc_manifest(temp_pvc, ns, target_size, access_modes, LONGHORN_SC)
+    step(2, total_steps, f"Создание временного PVC {temp_pvc} ({target_sc})")
+    manifest = build_pvc_manifest(temp_pvc, ns, target_size, access_modes, target_sc)
     runner.apply_manifest(manifest, title=f"PVC {temp_pvc}")
     logger.info(f"Ожидание PVC {temp_pvc} -> Bound...")
     if not runner.dry_run:
@@ -571,9 +592,9 @@ def migrate_pvc(
     runner.kubectl(["delete", "pvc", pvc_name, "-n", ns], check=True)
 
     # --- Шаг 9 ---
-    step(9, total_steps, f"Создание PVC {pvc_name} (longhorn)")
+    step(9, total_steps, f"Создание PVC {pvc_name} ({target_sc})")
     new_manifest = build_pvc_manifest(
-        pvc_name, ns, target_size, access_modes, LONGHORN_SC
+        pvc_name, ns, target_size, access_modes, target_sc
     )
     runner.apply_manifest(new_manifest, title=f"PVC {pvc_name}")
     logger.info(f"Ожидание PVC {pvc_name} -> Bound...")
@@ -590,7 +611,7 @@ def migrate_pvc(
         f"PVC {pvc_name} -> PV {final_pv}, SC={final_sc}"
     )
 
-    print_final_instructions(ns, wtype, source_size, target_size)
+    print_final_instructions(ns, wtype, source_size, target_size, target_sc=target_sc)
 
 
 # --------------------------------------------------------------------------- #
@@ -658,9 +679,20 @@ def main() -> int:
         "--target-size",
         help="Размер целевого PVC (например, 15Gi). Иначе — запрос интерактивно.",
     )
+    parser.add_argument(
+        "--target-sc",
+        default="longhorn-low",
+        help="StorageClassName целевого PVC (по умолчанию: longhorn-low)",
+    )
+    parser.add_argument(
+        "--yes", "-y", action="store_true", help="Автоматически подтверждать запросы"
+    )
     args = parser.parse_args()
 
     setup_logging(args.dry_run)
+    if args.yes:
+        global _AUTO_CONFIRM
+        _AUTO_CONFIRM = True
     runner = Runner(dry_run=args.dry_run, namespace=args.namespace)
 
     logger.info(f"Namespace: [bold]{args.namespace}[/bold]")
@@ -770,10 +802,18 @@ def main() -> int:
             title="Уменьшение PVC",
         )
 
+
     # Финальное подтверждение
     console.print()
     print_summary(
-        args.namespace, workload, wtype, pvc_name, source_size, target_size, args.dry_run
+        args.namespace,
+        workload,
+        wtype,
+        pvc_name,
+        source_size,
+        target_size,
+        args.dry_run,
+        target_sc=args.target_sc,
     )
     console.print()
     if not confirm("Начать миграцию?", default=False):
@@ -781,7 +821,14 @@ def main() -> int:
         return 0
 
     try:
-        migrate_pvc(runner, pvc_name, wtype, workload, target_size=target_size)
+        migrate_pvc(
+            runner,
+            pvc_name,
+            wtype,
+            workload,
+            target_size=target_size,
+            target_sc=args.target_sc,
+        )
     except KeyboardInterrupt:
         logger.warning("Прервано пользователем (Ctrl+C).")
         print_error_panel(

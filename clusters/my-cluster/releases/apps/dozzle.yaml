@@ -34,3 +34,5 @@ spec:
     ingress:
       annotations:
         traefik.ingress.kubernetes.io/router.tls.options: networking-mtls-strict@kubernetescrd
+    persistence:
+      storageClassName: longhorn-low
