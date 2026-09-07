@@ -34,3 +34,8 @@ spec:
   values:
     ingress:
       enabled: false
+    persistence:
+      defaultClass: false
+      defaultClassReplicaCount: 3
+    defaultSettings:
+      defaultReplicaCount: 3
