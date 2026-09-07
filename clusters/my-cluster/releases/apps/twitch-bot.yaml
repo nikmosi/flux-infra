@@ -31,7 +31,7 @@ spec:
       interval: 1h
   values:
     imagePullSecrets:
-      - name: twitch-bot-zot
+      - name: zot-reader
     database:
       existingSecret: "twich-bot-db-creds"
     creds:
