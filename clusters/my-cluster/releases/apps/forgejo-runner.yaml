@@ -90,13 +90,13 @@ spec:
         cpu: 100m
         memory: 512Mi
       limits:
-        cpu: 2000m
-        memory: 3072Mi
+        cpu: 1500m
+        memory: 2048Mi
     dind:
       resources:
         requests:
           cpu: 100m
           memory: 512Mi
         limits:
-          cpu: 2000m
-          memory: 3072Mi
+          cpu: 1500m
+          memory: 2048Mi
