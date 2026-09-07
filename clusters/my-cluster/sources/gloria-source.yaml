@@ -1,0 +1,13 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: gloria
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: gloria-source
+  url: ssh://git@forgejo-ssh.developer-tools.svc.cluster.local/nikmosi/gloria.git
