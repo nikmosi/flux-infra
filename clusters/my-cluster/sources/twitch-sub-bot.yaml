@@ -1,4 +1,17 @@
 ---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: twitch-sub-bot
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: twitch-sub-bot-source
+  url: ssh://git@forgejo-ssh.developer-tools.svc.cluster.local/nikmosi/twitch-sub-bot.git
+---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:

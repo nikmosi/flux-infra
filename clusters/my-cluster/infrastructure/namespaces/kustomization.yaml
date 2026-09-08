@@ -8,6 +8,4 @@ labels:
 
 resources:
   - namespaces.yaml
-  - goldilocks-middleware.yaml
-  - longhorn-system-middleware.yaml
-  - pgadmin-middleware.yaml
+  - middlewares.yaml

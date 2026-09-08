@@ -39,3 +39,31 @@ spec:
       defaultClassReplicaCount: 3
     defaultSettings:
       defaultReplicaCount: 3
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`longhorn.xinfra.ru`)
+      kind: Rule
+      middlewares:
+        - name: forwardauth-authelia
+          namespace: longhorn-system
+        - name: longhorn-buffering
+          namespace: longhorn-system
+      services:
+        - kind: Service
+          name: longhorn-frontend
+          namespace: longhorn-system
+          passHostHeader: true
+          port: 80
+  tls:
+    options:
+      name: mtls-strict
+      namespace: networking
+    secretName: wildcard-xinfra-ru-tls

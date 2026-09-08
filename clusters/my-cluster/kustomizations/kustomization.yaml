@@ -2,9 +2,4 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- 01-infrastructure.yaml
-- 02-sources.yaml
-- 03-releases.yaml
-- 04-apps.yaml
-- 05-secrets.yaml
-- 06-cert-manager-configs.yaml
+- stages.yaml

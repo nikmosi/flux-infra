@@ -1,0 +1,81 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+  layerSelector:
+    mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+    operation: copy
+  ref:
+    semver: ">=0.52.0"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
+        target:
+          kind: ".*"
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator
+  upgrade:
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
+  values:
+    resources:
+      limits:
+        cpu: 500m
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: forwardauth-authelia
+  namespace: flux-system
+spec:
+  forwardAuth:
+    address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
+    trustForwardHeader: true
+    authResponseHeaders:
+      - Remote-User
+      - Remote-Name
+      - Remote-Email
+      - Remote-Groups
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: flux-web-ui
+  namespace: flux-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`flux.xinfra.ru`)
+      kind: Rule
+      middlewares:
+        - name: forwardauth-authelia
+          namespace: flux-system
+      services:
+        - name: flux-operator
+          port: 9080
+  tls:
+    options:
+      name: mtls-strict
+      namespace: networking
+    secretName: wildcard-xinfra-ru-tls

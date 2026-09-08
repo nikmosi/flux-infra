@@ -734,3 +734,26 @@ spec:
             - name: http
               port: 8080
               targetPort: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`grafana.xinfra.ru`)
+      kind: Rule
+      services:
+        - kind: Service
+          name: kube-prometheus-stack-grafana
+          namespace: monitoring
+          passHostHeader: true
+          port: 80
+  tls:
+    options:
+      name: mtls-strict
+      namespace: networking
+    secretName: wildcard-xinfra-ru-tls

@@ -568,3 +568,35 @@ spec:
               access_token_signed_response_alg: none
               userinfo_signed_response_alg: none
               token_endpoint_auth_method: client_secret_post
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authelia
+  namespace: security
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`auth.xinfra.ru`) && PathPrefix(`/`)
+      kind: Rule
+      middlewares:
+        - name: chain-authelia
+          namespace: security
+      priority: 500
+      services:
+        - kind: Service
+          name: authelia
+          namespace: security
+          passHostHeader: true
+          port: 80
+          responseForwarding:
+            flushInterval: 100ms
+          scheme: http
+          strategy: RoundRobin
+          weight: 10
+  tls:
+    options:
+      name: authelia
+      namespace: security
+    secretName: wildcard-xinfra-ru-tls

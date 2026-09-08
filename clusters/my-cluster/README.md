@@ -8,25 +8,27 @@ GitOps-репозиторий для Kubernetes-кластера `my-cluster` н
 ```
 clusters/my-cluster/
 ├── flux-system/                        # Bootstrap Flux (не редактировать)
-├── infrastructure/                     # Статические ресурсы кластера
-│   ├── namespaces/                     # Namespace definitions
+├── infrastructure/                     # Статические ресурсы кластера (namespaces, middlewares, storageclasses, traefik, flux-operator)
+│   ├── namespaces/                     # Определение namespaces и middlewares
 │   ├── cert-manager/                   # ClusterIssuer + Certificate (Let's Encrypt)
-│   └── traefik/                        # RKE2 HelmChartConfig
-├── sources/                            # Source CRDs (HelmRepository, GitRepository, OCIRepository)
-├── releases/                           # HelmRelease CRDs
-│   └── apps/                           # HelmRelease приложений (authelia и т.д.)
-├── kustomizations/                     # Flux Kustomization CRD с ordering
-└── secrets/                            # SOPS-encrypted secrets
+│   ├── storage/                        # StorageClasses (local-path, longhorn-low)
+│   ├── traefik/                        # Traefik HelmRelease и TLSOption
+│   └── flux-operator.yaml              # Flux Operator (Source, HelmRelease, Ingress)
+├── sources/                            # Source CRDs (helm-repositories.yaml, git-repositories, image-automation)
+├── releases/                           # Базовые инфраструктурные HelmReleases (cert-manager, reflector)
+│   └── apps/                           # HelmRelease приложений, IngressRoutes и единый pvcs.yaml
+├── kustomizations/                     # Flux Kustomization CRD (stages.yaml)
+└── secrets/                            # SOPS-encrypted secrets (*.enc.yaml)
 ```
 
 ## Порядок применения (depends_on)
 
-1. `infrastructure` — namespaces, cert-manager CRDs, traefik
-2. `sources` — HelmRepository, GitRepository, OCIRepository
-3. `releases` — HelmRelease (cert-manager, reflector)
-   depends_on: infrastructure, sources
-4. `apps` — HelmRelease приложений (authelia)
-   depends_on: infrastructure, releases
+1. `infrastructure` — namespaces, middlewares, storageclasses, traefik, flux-operator
+2. `sources` — каталог helm-repositories, git-repositories, image-automation
+3. `releases` — cert-manager, reflector (depends_on: infrastructure, sources)
+4. `secrets` — SOPS-зашифрованные секреты (depends_on: infrastructure)
+5. `cert-manager-configs` — ClusterIssuer и wildcard certificate (depends_on: releases, secrets)
+6. `apps` — HelmRelease приложений и pvcs (depends_on: cert-manager-configs)
 
 ## Добавление нового HelmRelease
 

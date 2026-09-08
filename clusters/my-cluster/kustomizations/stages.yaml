@@ -1,0 +1,166 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./clusters/my-cluster/infrastructure
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 3m0s
+  wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: sources
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./clusters/my-cluster/sources
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m0s
+  wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: releases
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure
+    - name: sources
+  interval: 10m0s
+  path: ./clusters/my-cluster/releases
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m0s
+  wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: secrets
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure
+  interval: 10m0s
+  path: ./clusters/my-cluster/secrets
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 3m0s
+  wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cert-manager-configs
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: releases
+    - name: secrets
+  interval: 10m0s
+  path: ./clusters/my-cluster/infrastructure/cert-manager
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 3m0s
+  wait: false
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cert-manager-configs
+  interval: 10m0s
+  path: ./clusters/my-cluster/releases/apps
+  prune: true
+  retryInterval: 2m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m0s
+  wait: true
+  ignore:
+    - paths:
+        - "/metadata/annotations"
+        - "/status"
+      target:
+        kind: ".*"
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

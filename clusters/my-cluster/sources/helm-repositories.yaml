@@ -1,0 +1,134 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cnpg
+  namespace: flux-system
+spec:
+  interval: 1h
+  type: oci
+  url: oci://ghcr.io/cloudnative-pg/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: crowdsecurity
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://crowdsecurity.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: emberstack
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://emberstack.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: forgejo-runner
+  namespace: flux-system
+spec:
+  type: oci
+  interval: 1h
+  url: oci://codeberg.org/wrenix/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kube-prometheus-stack
+  namespace: flux-system
+spec:
+  type: oci
+  interval: 1h
+  url: oci://ghcr.io/prometheus-community/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: longhorn
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  type: oci
+  url: oci://zot.xinfra.ru/charts
+  secretRef:
+    name: zot
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: mailu
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://mailu.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: project-zot
+  namespace: flux-system
+spec:
+  interval: 1h
+  type: oci
+  url: oci://ghcr.io/project-zot/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: rm3l
+  namespace: flux-system
+spec:
+  interval: 1h
+  type: oci
+  url: oci://zot.xinfra.ru/charts
+  secretRef:
+    name: zot
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: runix
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://helm.runix.net
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: traefik
+  namespace: flux-system
+spec:
+  interval: 1h
+  type: oci
+  url: oci://ghcr.io/traefik/helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: vaultwarden
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://guerzon.github.io/vaultwarden
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: vikunja
+  namespace: flux-system
+spec:
+  type: oci
+  interval: 1h
+  url: oci://ghcr.io/go-vikunja/helm-chart
