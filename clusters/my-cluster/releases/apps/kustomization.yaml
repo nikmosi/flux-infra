@@ -10,6 +10,7 @@ resources:
 - forgejo-runner.yaml
 - forgejo.yaml
 - forgesync.yaml
+- gloria.yaml
 - goldilocks.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
