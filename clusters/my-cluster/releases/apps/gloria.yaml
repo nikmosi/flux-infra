@@ -38,3 +38,17 @@ spec:
       - name: zot-reader
     collector:
       existingSecret: gloria-config
+    ingress:
+      enabled: true
+      className: traefik
+      hosts:
+        - host: gloria.xinfra.ru
+          paths:
+            - path: /login/confirm
+              pathType: Prefix
+            - path: /login
+              pathType: Prefix
+      tls:
+        - secretName: wildcard-xinfra-ru-tls
+          hosts:
+            - gloria.xinfra.ru
