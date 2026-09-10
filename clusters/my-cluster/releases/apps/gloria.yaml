@@ -32,7 +32,7 @@ spec:
   values:
     image:
       repository: zot.xinfra.ru/gloria
-      tag: "0.1.1"
+      tag: "0.1.2"
       pullPolicy: Always
     imagePullSecrets:
       - name: zot-reader
