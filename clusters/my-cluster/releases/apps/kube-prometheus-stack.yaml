@@ -261,7 +261,7 @@ spec:
           port: 3000
         initialDelaySeconds: 60
         periodSeconds: 10
-        timeoutSeconds: 5
+        timeoutSeconds: 10
         failureThreshold: 3
 
       livenessProbe:
@@ -279,7 +279,7 @@ spec:
           memory: 512Mi
         limits:
           cpu: 1000m
-          memory: 1024Mi
+          memory: 2048Mi
 
     kubeApiServer:
       enabled: true
