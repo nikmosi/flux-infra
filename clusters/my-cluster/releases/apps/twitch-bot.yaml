@@ -37,6 +37,6 @@ spec:
     creds:
       existingSecret: "twitch-bot-creds"
     image:
-      tag: "v0.4.1" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
+      tag: "v0.4.2" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
     env:
       LIMITER_MAX_RATE: 100
