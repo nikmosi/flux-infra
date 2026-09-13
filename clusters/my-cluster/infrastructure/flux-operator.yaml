@@ -43,21 +43,6 @@ spec:
         cpu: 500m
 ---
 apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: forwardauth-authelia
-  namespace: flux-system
-spec:
-  forwardAuth:
-    address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
-    trustForwardHeader: true
-    authResponseHeaders:
-      - Remote-User
-      - Remote-Name
-      - Remote-Email
-      - Remote-Groups
----
-apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: flux-web-ui
@@ -70,7 +55,7 @@ spec:
       kind: Rule
       middlewares:
         - name: forwardauth-authelia
-          namespace: flux-system
+          namespace: security
       services:
         - name: flux-operator
           port: 9080

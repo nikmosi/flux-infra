@@ -53,7 +53,7 @@ spec:
       kind: Rule
       middlewares:
         - name: forwardauth-authelia
-          namespace: longhorn-system
+          namespace: security
         - name: longhorn-buffering
           namespace: longhorn-system
       services:

@@ -33,7 +33,7 @@ spec:
       interval: 1h
   values:
     imagePullSecrets:
-      - name: zot
+      - name: zot-reader
     image:
       pullPolicy: Always
     source: "https://git.xinfra.ru/api/v1"

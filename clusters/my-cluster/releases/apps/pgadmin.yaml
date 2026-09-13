@@ -50,7 +50,7 @@ spec:
       enabled: true
       ingressClassName: "traefik"
       annotations:
-        traefik.ingress.kubernetes.io/router.middlewares: database-forwardauth-authelia@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: security-forwardauth-authelia@kubernetescrd
         traefik.ingress.kubernetes.io/router.tls.options: networking-mtls-strict@kubernetescrd
       hosts:
         - host: pgadmin.xinfra.ru

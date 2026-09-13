@@ -37,7 +37,7 @@ spec:
       - name: FORGEJO__database__PASSWD
         valueFrom:
           secretKeyRef:
-            name: forgejo-db-secret
+            name: forgejo-db-user
             key: password
       - name: FORGEJO__SESSION__PROVIDER_CONFIG
         value: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/1?pool_size=100&idle_timeout=180s

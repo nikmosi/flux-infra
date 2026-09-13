@@ -134,6 +134,10 @@ spec:
           path: authelia-reset-password
         authelia-oidc:
           path: authelia-oidc
+        forgejo-authelia-oauth:
+          path: forgejo-oauth
+        grafana-authelia-oauth:
+          path: grafana-oauth
 
     configMap:
       theme: dark
@@ -428,7 +432,7 @@ spec:
             - client_id: grafana
               client_name: Grafana
               client_secret:
-                path: /secrets/authelia-oidc/grafana-client-secret
+                path: /secrets/grafana-oauth/client-secret
               public: false
               authorization_policy: two_factor
               consent_mode: implicit
@@ -454,7 +458,7 @@ spec:
             - client_id: forgejo
               client_name: Forgejo
               client_secret:
-                path: /secrets/authelia-oidc/forgejo-client-secret
+                path: /secrets/forgejo-oauth/secret
               public: false
               authorization_policy: two_factor
               consent_mode: implicit

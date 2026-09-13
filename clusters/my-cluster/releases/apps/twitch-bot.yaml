@@ -33,7 +33,7 @@ spec:
     imagePullSecrets:
       - name: zot-reader
     database:
-      existingSecret: "twich-bot-db-creds"
+      existingSecret: "twitch-sub-bot-db-user"
     creds:
       existingSecret: "twitch-bot-creds"
     image:

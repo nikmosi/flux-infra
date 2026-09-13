@@ -3,22 +3,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: forwardauth-authelia
-  namespace: monitoring
-spec:
-  forwardAuth:
-    address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
-    trustForwardHeader: true
-    authResponseHeaders:
-      - Remote-User
-      - Remote-Name
-      - Remote-Email
-      - Remote-Groups
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: forwardauth-authelia
-  namespace: longhorn-system
+  namespace: security
 spec:
   forwardAuth:
     address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
@@ -38,18 +23,3 @@ spec:
   buffering:
     # Allows backing image uploads up to 10,000MB
     maxRequestBodyBytes: 10485760000
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: forwardauth-authelia
-  namespace: database
-spec:
-  forwardAuth:
-    address: http://authelia.security.svc.cluster.local/api/authz/forward-auth
-    trustForwardHeader: true
-    authResponseHeaders:
-      - Remote-User
-      - Remote-Name
-      - Remote-Email
-      - Remote-Groups

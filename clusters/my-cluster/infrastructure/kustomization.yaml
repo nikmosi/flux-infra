@@ -7,3 +7,4 @@ resources:
 - traefik/traefik-helmrelease.yaml
 - traefik/tlsoption-strictverify.yaml
 - flux-operator.yaml
+- cluster-settings.yaml

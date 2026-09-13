@@ -407,7 +407,7 @@ spec:
     externalSecrets:
       - secretName: "oidc-credentials"
         mountPath: "/etc/zot/oidc"
-      - secretName: "zot-ldap"
+      - secretName: "authelia-ldap"
         mountPath: "/etc/zot/ldap"
       - secretName: "zot-secret-external"
         mountPath: "/secret"

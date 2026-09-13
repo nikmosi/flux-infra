@@ -59,7 +59,7 @@ spec:
   type: oci
   url: oci://zot.xinfra.ru/charts
   secretRef:
-    name: zot
+    name: zot-reader
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -91,7 +91,7 @@ spec:
   type: oci
   url: oci://zot.xinfra.ru/charts
   secretRef:
-    name: zot
+    name: zot-reader
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
