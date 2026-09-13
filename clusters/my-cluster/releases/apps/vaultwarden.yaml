@@ -104,9 +104,7 @@ spec:
       host: "lab-postgres-rw.database.svc.cluster.local"
       port: 5432
       dbName: "vaultwarden"
-      username: "vaultwarden"
-      existingSecret: "vaultwarden"
-      existingSecretPasswordKey: "db-password"
+      existingSecret: "vaultwarden-db-user"
       connectionRetries: 15
       maxConnections: 10
 
