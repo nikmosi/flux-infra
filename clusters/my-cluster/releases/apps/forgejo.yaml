@@ -47,7 +47,7 @@ spec:
         value: redis://forgejo-valkey.developer-tools.svc.cluster.local:6379/0?pool_size=100&idle_timeout=180s
 
     forgejo:
-      replicaCount: 2
+      replicaCount: 1
 
       podSecurityContext:
         runAsNonRoot: true
