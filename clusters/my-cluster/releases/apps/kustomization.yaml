@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
 - adguard.yaml
 - authelia.yaml
+- cnpg-databases.yaml
 - cnpg.yaml
 - dozzle.yaml
 - forgejo-custom-templates.yaml

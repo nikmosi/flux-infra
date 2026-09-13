@@ -1,0 +1,119 @@
+---
+# ==============================================================================
+# Database Roles (Users)
+# ==============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-admin
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: admin
+  login: true
+  superuser: true
+  createdb: true
+  createrole: true
+  passwordSecret:
+    name: admin-db-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-forgejo
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: forgejo
+  login: true
+  passwordSecret:
+    name: forgejo-db-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-vaultwarden
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: vaultwarden
+  login: true
+  passwordSecret:
+    name: vaultwarden-db-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-twitch-sub-bot
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: twitch_sub_bot
+  login: true
+  passwordSecret:
+    name: twitch-sub-bot-db-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-gloria
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: gloria
+  login: true
+  passwordSecret:
+    name: gloria-db-user
+
+---
+# ==============================================================================
+# Databases
+# ==============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lab-postgres-db-forgejo
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: forgejo
+  owner: forgejo
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lab-postgres-db-vaultwarden
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: vaultwarden
+  owner: vaultwarden
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lab-postgres-db-twitch-subs
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: twitch_subs
+  owner: twitch_sub_bot
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lab-postgres-db-gloria
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: gloria
+  owner: gloria
