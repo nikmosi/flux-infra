@@ -21,7 +21,7 @@ spec:
   image: zot.xinfra.ru/twitch-sub-check
   interval: 5m
   secretRef:
-    name: zot
+    name: zot-reader
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
