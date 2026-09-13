@@ -43,18 +43,11 @@ spec:
         size: 128Mi
 
     extraEnv:
-      - name: GLORIA_DB_USER
-        valueFrom:
-          secretKeyRef:
-            name: gloria-db-user
-            key: username
-      - name: GLORIA_DB_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: gloria-db-user
-            key: password
       - name: GLORIA_DATABASE
-        value: "postgresql+asyncpg://$(GLORIA_DB_USER):$(GLORIA_DB_PASSWORD)@lab-postgres-rw.database.svc.cluster.local:5432/gloria"
+        valueFrom:
+          secretKeyRef:
+            name: gloria-db-user
+            key: database
 
     ingress:
       enabled: true
