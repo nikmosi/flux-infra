@@ -73,10 +73,10 @@ spec:
           memory: 1536Mi
 
       persistence:
-        claimName: forgejo-shared-storage-rwx
+        claimName: forgejo-storage-rwo
         size: 10Gi
         accessModes:
-          - ReadWriteMany
+          - ReadWriteOnce
         storageClass: "longhorn"
 
       extraVolumes:
