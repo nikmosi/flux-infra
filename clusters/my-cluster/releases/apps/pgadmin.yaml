@@ -38,6 +38,9 @@ spec:
       type: Recreate
     env:
       email: nikmosi@xinfra.ru
+    envVarsExtra:
+      - name: TMPDIR
+        value: /var/lib/pgadmin
     existingSecret: pgadmin-default-password
     resources:
       requests:
