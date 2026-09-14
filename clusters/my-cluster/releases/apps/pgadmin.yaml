@@ -34,6 +34,8 @@ spec:
         namespace: flux-system
       interval: 1h
   values:
+    strategy:
+      type: Recreate
     env:
       email: nikmosi@xinfra.ru
     existingSecret: pgadmin-default-password
