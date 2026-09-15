@@ -45,9 +45,14 @@ spec:
     resources:
       requests:
         cpu: 100m
-        memory: 256Mi
-      limits:
         memory: 512Mi
+      limits:
+        memory: 1Gi
+    startupProbe:
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      failureThreshold: 30
     persistentVolume:
       size: 5Gi
       storageClass: longhorn
