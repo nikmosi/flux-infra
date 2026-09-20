@@ -94,7 +94,7 @@ spec:
     storage:
       data:
         name: "vaultwarden-data"
-        size: "15Gi"
+        size: "500Mi"
         class: "longhorn"
         path: "/data"
         accessMode: "ReadWriteOnce"
