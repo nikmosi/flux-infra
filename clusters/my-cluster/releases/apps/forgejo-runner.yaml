@@ -74,7 +74,7 @@ spec:
         instance: http://forgejo-http.developer-tools.svc.cluster.local:3000
         file:
           runner:
-            capacity: 1
+            capacity: 6
             envs: {}
             labels:
               - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
@@ -87,16 +87,16 @@ spec:
 
     resources:
       requests:
-        cpu: 100m
-        memory: 512Mi
+        cpu: 20m
+        memory: 64Mi
       limits:
-        cpu: 1500m
-        memory: 2048Mi
+        cpu: 200m
+        memory: 256Mi
     dind:
       resources:
         requests:
-          cpu: 100m
-          memory: 512Mi
+          cpu: 500m
+          memory: 1024Mi
         limits:
-          cpu: 1500m
-          memory: 2048Mi
+          cpu: 2000m
+          memory: 3072Mi
