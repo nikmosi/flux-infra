@@ -36,6 +36,7 @@ spec:
   values:
     strategy:
       type: Recreate
+      rollingUpdate: null
     env:
       email: nikmosi@xinfra.ru
     envVarsExtra:
