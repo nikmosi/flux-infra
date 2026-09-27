@@ -90,6 +90,8 @@ spec:
 
       gitea:
         config:
+          service:
+            REQUIRE_SIGNIN_VIEW: false
           database:
             DB_TYPE: postgres
             HOST: lab-postgres-rw.database.svc.cluster.local:5432
