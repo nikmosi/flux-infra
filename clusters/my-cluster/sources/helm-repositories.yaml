@@ -156,9 +156,19 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: renovate
+  name: renovate-operator
   namespace: flux-system
 spec:
   type: oci
   interval: 1h
-  url: oci://ghcr.io/renovatebot/charts
+  url: oci://ghcr.io/mogenius/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: homebox
+  namespace: flux-system
+spec:
+  interval: 1h
+  timeout: 5m0s
+  url: https://bythehugo.github.io/homebox-helm

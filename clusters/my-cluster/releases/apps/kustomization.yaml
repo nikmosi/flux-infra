@@ -13,6 +13,7 @@ resources:
 - forgesync.yaml
 - gloria.yaml
 - goldilocks.yaml
+- homebox.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml

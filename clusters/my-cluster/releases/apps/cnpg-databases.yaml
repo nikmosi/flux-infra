@@ -69,6 +69,20 @@ spec:
   login: true
   passwordSecret:
     name: gloria-db-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: lab-postgres-role-homebox
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: homebox
+  login: true
+  passwordSecret:
+    name: homebox-db-user
+
 
 ---
 # ==============================================================================
@@ -117,3 +131,14 @@ spec:
     name: lab-postgres
   name: gloria
   owner: gloria
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: lab-postgres-db-homebox
+  namespace: database
+spec:
+  cluster:
+    name: lab-postgres
+  name: homebox
+  owner: homebox

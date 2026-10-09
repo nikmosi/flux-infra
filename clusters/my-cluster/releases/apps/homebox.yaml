@@ -1,0 +1,79 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homebox
+  namespace: apps
+spec:
+  dependsOn:
+    - name: cnpg
+      namespace: database
+  interval: 10m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
+        target:
+          kind: ".*"
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: homebox
+      version: "0.3.0"
+      sourceRef:
+        kind: HelmRepository
+        name: homebox
+        namespace: flux-system
+      interval: 1h
+  values:
+    env:
+      TZ: "Asia/Novosibirsk"
+      HBOX_MODE: "production"
+      HBOX_DATABASE_DRIVER: "postgres"
+      HBOX_DATABASE_SSL_MODE: "disable"
+    postgresql:
+      enabled: false
+    externalPostgresql:
+      host: "lab-postgres-rw.database.svc.cluster.local"
+      port: 5432
+      auth:
+        database: "homebox"
+        username:
+          existingSecret: "homebox-db-user"
+          existingSecretKey: "username"
+        password:
+          existingSecret: "homebox-db-user"
+          existingSecretKey: "password"
+    persistence:
+      storageClass: "longhorn"
+      capacity: 5Gi
+      accessModes:
+        - ReadWriteOnce
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: "homebox.xinfra.ru"
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: "wildcard-xinfra-ru-tls"
+          hosts:
+            - "homebox.xinfra.ru"

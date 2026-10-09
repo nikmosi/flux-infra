@@ -2,10 +2,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: renovate
+  name: renovate-operator
   namespace: developer-tools
 spec:
-  interval: 5m
+  interval: 10m
   driftDetection:
     mode: enabled
     ignore:
@@ -24,60 +24,89 @@ spec:
       retries: 3
   chart:
     spec:
-      chart: renovate
+      chart: renovate-operator
       sourceRef:
         kind: HelmRepository
-        name: renovate
+        name: renovate-operator
         namespace: flux-system
       interval: 1h
   values:
-    cronjob:
-      schedule: "0 * * * *"
-      concurrencyPolicy: "Forbid"
-      jobRestartPolicy: "Never"
-      failedJobsHistoryLimit: 3
-      successfulJobsHistoryLimit: 1
+    fullnameOverride: renovate-operator
 
-    image:
-      useFull: true
+    crd:
+      install: false
 
-    existingSecret: renovate
+    authorization:
+      defaults:
+        anonymousRead: true
+        anonymousReadLogs: true
 
-    securityContext:
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      host: renovate.xinfra.ru
+      annotations:
+        traefik.ingress.kubernetes.io/router.middlewares: security-forwardauth-authelia@kubernetescrd
+        traefik.ingress.kubernetes.io/router.tls.options: networking-mtls-strict@kubernetescrd
+      tls:
+        - hosts:
+            - renovate.xinfra.ru
+          secretName: wildcard-xinfra-ru-tls
+
+    webhook:
+      enabled: true
+      port: 8082
+
+    resources:
+      requests:
+        cpu: 15m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+---
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: forgejo-renovate
+  namespace: developer-tools
+spec:
+  schedule: "0 * * * *"
+  parallelism: 1
+  image: "ghcr.io/renovatebot/renovate:44.148.4-full"
+  provider:
+    name: forgejo
+    endpoint: "https://git.xinfra.ru/api/v1"
+  secretRef: renovate
+  discoveryFilters:
+    - "*/*"
+  securityContext:
+    pod:
       runAsNonRoot: true
       runAsUser: 1000
       runAsGroup: 1000
       fsGroup: 1000
       seccompProfile:
         type: RuntimeDefault
-
-    renovate:
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: false
-        capabilities:
-          drop:
-            - ALL
-      config: |
-        {
-          "platform": "forgejo",
-          "endpoint": "https://git.xinfra.ru/api/v1",
-          "autodiscover": true,
-          "gitAuthor": "Renovate Bot <renovate-bot@xinfra.ru>",
-          "onboardingConfig": {
-            "extends": ["config:recommended"]
-          }
-        }
-      persistence:
-        cache:
-          enabled: true
-          storageClass: "longhorn"
-          storageSize: "2Gi"
-
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 2000m
-        memory: 2Gi
+    container:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
+  extraEnv:
+    - name: RENOVATE_GIT_AUTHOR
+      value: "Renovate Bot <renovate-bot@xinfra.ru>"
+    - name: RENOVATE_ONBOARDING_CONFIG
+      value: '{"extends": ["config:recommended"]}'
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  webhook:
+    enabled: true
+    baseUrl: "http://renovate-operator.developer-tools.svc.cluster.local:8082"
