@@ -57,6 +57,7 @@ spec:
       HBOX_OPTIONS_TRUST_PROXY: "true"
       HBOX_OPTIONS_ALLOW_LOCAL_LOGIN: "true"
       HBOX_OIDC_AUTO_REDIRECT: "false"
+      HBOX_STORAGE_CONN_STRING: "file:///data?no_tmp_dir=true"
     postgresql:
       enabled: false
     externalPostgresql:
