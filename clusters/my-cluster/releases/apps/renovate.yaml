@@ -1,0 +1,83 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: renovate
+  namespace: developer-tools
+spec:
+  interval: 5m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths:
+          - "/status"
+          - "/metadata/generation"
+          - "/metadata/managedFields"
+          - "/metadata/annotations"
+        target:
+          kind: ".*"
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  chart:
+    spec:
+      chart: renovate
+      sourceRef:
+        kind: HelmRepository
+        name: renovate
+        namespace: flux-system
+      interval: 1h
+  values:
+    cronjob:
+      schedule: "0 * * * *"
+      concurrencyPolicy: "Forbid"
+      jobRestartPolicy: "Never"
+      failedJobsHistoryLimit: 3
+      successfulJobsHistoryLimit: 1
+
+    image:
+      useFull: true
+
+    existingSecret: renovate
+
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+
+    renovate:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: false
+        capabilities:
+          drop:
+            - ALL
+      config: |
+        {
+          "platform": "forgejo",
+          "endpoint": "https://git.xinfra.ru/api/v1",
+          "autodiscover": true,
+          "gitAuthor": "Renovate Bot <renovate-bot@xinfra.ru>",
+          "onboardingConfig": {
+            "extends": ["config:recommended"]
+          }
+        }
+      persistence:
+        cache:
+          enabled: true
+          storageClass: "longhorn"
+          storageSize: "2Gi"
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi

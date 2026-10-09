@@ -20,6 +20,7 @@ resources:
 - ntfy.yaml
 - pgadmin.yaml
 - pvcs.yaml
+- renovate.yaml
 - supersync.yaml
 - twitch-bot.yaml
 - vaultwarden.yaml
