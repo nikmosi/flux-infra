@@ -14,6 +14,7 @@ resources:
 - gloria.yaml
 - goldilocks.yaml
 - homebox.yaml
+- homebox-mcp.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml

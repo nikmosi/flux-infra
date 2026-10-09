@@ -594,6 +594,36 @@ spec:
                 - authorization_code
               require_pkce: false
               token_endpoint_auth_method: client_secret_basic
+
+            - client_id: gemini-spark
+              client_name: Gemini Spark MCP
+              client_secret:
+                path: /secrets/authelia-oidc/gemini-spark-client-secret
+              public: false
+              authorization_policy: two_factor
+              consent_mode: implicit
+              claims_policy: default
+              redirect_uris:
+                - https://vertexaisearch.cloud.google.com/oauth-redirect
+                - https://gemini.google.com/oauth-redirect
+                - https://gemini.google.com/api/oauth/callback
+                - https://oauth-redirect.googleusercontent.com/r/gemini
+                - https://oauth-redirect.googleusercontent.com
+                - https://developers.google.com/oauth-redirect
+              scopes:
+                - openid
+                - profile
+                - email
+                - offline_access
+              response_types:
+                - code
+              grant_types:
+                - authorization_code
+                - refresh_token
+              require_pkce: true
+              pkce_challenge_method: S256
+              token_endpoint_auth_method: client_secret_post
+              access_token_signed_response_alg: RS256
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
