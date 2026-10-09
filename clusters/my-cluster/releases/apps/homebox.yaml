@@ -8,6 +8,8 @@ spec:
   dependsOn:
     - name: cnpg
       namespace: database
+    - name: authelia
+      namespace: security
   interval: 10m
   driftDetection:
     mode: enabled
@@ -39,12 +41,22 @@ spec:
       name: homebox-secrets
       valuesKey: api-key-pepper
       targetPath: env.HBOX_AUTH_API_KEY_PEPPER
+    - kind: Secret
+      name: homebox-secrets
+      valuesKey: oidc-client-secret
+      targetPath: env.HBOX_OIDC_CLIENT_SECRET
   values:
     env:
       TZ: "Asia/Novosibirsk"
       HBOX_MODE: "production"
       HBOX_DATABASE_DRIVER: "postgres"
       HBOX_DATABASE_SSL_MODE: "disable"
+      HBOX_OIDC_ENABLED: "true"
+      HBOX_OIDC_ISSUER_URL: "https://auth.xinfra.ru"
+      HBOX_OIDC_CLIENT_ID: "homebox"
+      HBOX_OPTIONS_TRUST_PROXY: "true"
+      HBOX_OPTIONS_ALLOW_LOCAL_LOGIN: "true"
+      HBOX_OIDC_AUTO_REDIRECT: "false"
     postgresql:
       enabled: false
     externalPostgresql:
