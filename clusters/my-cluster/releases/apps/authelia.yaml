@@ -606,8 +606,14 @@ spec:
               audience:
                 - https://mcp-homebox.xinfra.ru/mcp
                 - https://mcp-homebox.xinfra.ru
+                - https://mcp-ntfy.xinfra.ru/mcp
+                - https://mcp-ntfy.xinfra.ru
+                - https://mcp-forgejo.xinfra.ru/mcp
+                - https://mcp-forgejo.xinfra.ru
               redirect_uris:
                 - https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-110027370343350676973-mcp-homebox_xinfra_ru
+                - https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-110027370343350676973-mcp-ntfy_xinfra_ru
+                - https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-110027370343350676973-mcp-forgejo_xinfra_ru
                 - https://vertexaisearch.cloud.google.com/oauth-redirect
                 - https://gemini.google.com/oauth-redirect
                 - https://gemini.google.com/api/oauth/callback

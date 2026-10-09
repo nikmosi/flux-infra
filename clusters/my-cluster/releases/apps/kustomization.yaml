@@ -9,6 +9,7 @@ resources:
 - dozzle.yaml
 - forgejo-custom-templates.yaml
 - forgejo-runner.yaml
+- forgejo-mcp.yaml
 - forgejo.yaml
 - forgesync.yaml
 - gloria.yaml
@@ -19,6 +20,7 @@ resources:
 - lldap.yaml
 - locust.yaml
 - longhorn.yaml
+- ntfy-mcp.yaml
 - ntfy.yaml
 - pgadmin.yaml
 - pvcs.yaml
