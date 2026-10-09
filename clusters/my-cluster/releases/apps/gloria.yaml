@@ -4,6 +4,9 @@ metadata:
   name: gloria
   namespace: apps
 spec:
+  dependsOn:
+    - name: cnpg
+      namespace: database
   interval: 5m
   driftDetection:
     mode: enabled

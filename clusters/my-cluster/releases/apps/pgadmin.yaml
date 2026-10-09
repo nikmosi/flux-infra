@@ -8,6 +8,8 @@ spec:
   dependsOn:
     - name: authelia
       namespace: security
+    - name: cnpg
+      namespace: database
   interval: 5m
   driftDetection:
     mode: enabled

@@ -5,6 +5,9 @@ metadata:
   name: vaultwarden
   namespace: security
 spec:
+  dependsOn:
+    - name: cnpg
+      namespace: database
   interval: 10m
   driftDetection:
     mode: enabled

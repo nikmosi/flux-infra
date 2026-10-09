@@ -34,6 +34,11 @@ spec:
         name: homebox
         namespace: flux-system
       interval: 1h
+  valuesFrom:
+    - kind: Secret
+      name: homebox-secrets
+      valuesKey: api-key-pepper
+      targetPath: env.HBOX_AUTH_API_KEY_PEPPER
   values:
     env:
       TZ: "Asia/Novosibirsk"
