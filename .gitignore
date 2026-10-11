@@ -16,4 +16,5 @@ devenv.local.yaml
 
 # Archives & Superpowers
 *.7z
+mods/
 .superpowers/

@@ -135,6 +135,16 @@ SERVER_UTILITIES: list[UtilityMod] = [
             "https://cdn.modrinth.com/data/fALzjamp/versions/4FTDk9wv/Chunky-1.3.146.jar",
         ],
     ),
+    UtilityMod(
+        name="SAuth Forge",
+        purpose="Player authentication (/login, /register)",
+        default_filename="SAuth-2.0.0.jar",
+        filename_pattern=r"^SAuth-.*\.jar$",
+        urls=[
+            # Official Modrinth build for Forge 1.20.1
+            "https://cdn.modrinth.com/data/tyAKpqKg/versions/p5bijuHC/SAuth-2.0.0.jar",
+        ],
+    ),
 ]
 
 # Client-only mods present in archive that lack packwiz index entries
@@ -599,7 +609,8 @@ def print_summary(
         idx_str = f"{len(filter_res.server_mods_indexed)} indexed"
         unidx_str = f"{len(filter_res.unindexed_server_mods)} unindexed"
         print(f"Server Mods (Archive): {total_server_mods} ({idx_str}, {unidx_str})")
-        print(f"Server Utilities:      {total_utilities} (FTB Essentials, LuckPerms, Chunky)")
+        utils_names = ", ".join(u.name.split()[0] for u in utilities)
+        print(f"Server Utilities:      {total_utilities} ({utils_names})")
         print(f"Total Server Mods:     {total_final}")
         if upload_dest:
             print(f"Upload Target:         {upload_dest}")

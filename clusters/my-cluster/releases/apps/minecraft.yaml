@@ -82,6 +82,12 @@ spec:
               value: "true"
             - name: RCON_PORT
               value: "25575"
+            - name: ONLINE_MODE
+              value: "FALSE"
+            - name: ENABLE_WHITELIST
+              value: "TRUE"
+            - name: ENFORCE_WHITELIST
+              value: "TRUE"
           resources:
             requests:
               cpu: 2000m
