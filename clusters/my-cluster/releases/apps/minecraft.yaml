@@ -48,7 +48,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: minecraft
-          image: itzg/minecraft-server:latest
+          image: itzg/minecraft-server:java17
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
@@ -70,6 +70,8 @@ spec:
               value: "FORGE"
             - name: VERSION
               value: "1.20.1"
+            - name: FORGE_VERSION
+              value: "47.4.26"
             - name: MEMORY
               value: "10G"
             - name: JVM_XX_OPTS
@@ -93,21 +95,24 @@ spec:
                 - mc-health
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 60
           livenessProbe:
             exec:
               command:
                 - mc-health
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 30
+            timeoutSeconds: 5
             failureThreshold: 5
           readinessProbe:
             exec:
               command:
                 - mc-health
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 15
-            failureThreshold: 3
+            timeoutSeconds: 5
+            failureThreshold: 5
           volumeMounts:
             - name: data
               mountPath: /data
@@ -126,7 +131,7 @@ spec:
           args:
             - export-for-prometheus
             - -servers
-            - localhost:25565
+            - 127.0.0.1:25565
             - -port
             - "8080"
           ports:
@@ -144,14 +149,18 @@ spec:
             httpGet:
               path: /metrics
               port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /metrics
               port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
         - name: data
           persistentVolumeClaim:

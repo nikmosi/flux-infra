@@ -21,6 +21,7 @@ import tomllib
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -111,15 +112,13 @@ SERVER_UTILITIES: list[UtilityMod] = [
     UtilityMod(
         name="LuckPerms Forge",
         purpose="Permissions management & web editor (/lp)",
-        default_filename="LuckPerms-Forge-5.5.87.jar",
+        default_filename="LuckPerms-Forge-5.4.102.jar",
         filename_pattern=r"^LuckPerms-Forge-.*\.jar$",
         urls=[
-            # Primary LuckPerms Forge download from official Jenkins (active stable build)
-            "https://download.luckperms.net/1674/forge/loader/LuckPerms-Forge-5.5.87.jar",
-            # URL from brief (build 1572)
-            "https://download.luckperms.net/1572/forge/LuckPerms-Forge-5.4.156.jar",
-            # Modrinth CDN fallback for Forge 1.20.1
+            # Official Modrinth build for Forge 1.20.1
             "https://cdn.modrinth.com/data/Vebnzrzj/versions/AudvOzqV/LuckPerms-Forge-5.4.102.jar",
+            # Fallback direct Jenkins URL
+            "https://download.luckperms.net/1572/forge/LuckPerms-Forge-5.4.156.jar",
         ],
     ),
     UtilityMod(
@@ -137,6 +136,19 @@ SERVER_UTILITIES: list[UtilityMod] = [
         ],
     ),
 ]
+
+# Client-only mods present in archive that lack packwiz index entries
+UNINDEXED_CLIENT_MODS: set[str] = {
+    "citresewn-1.20.1-5.jar",
+    "stop_rendering-forge-1.0.3.jar",
+    "gpumemleakfix-1.20.1-1.8.jar",
+    "farsight-1.20.1-5.1.jar",
+    "biomemusic-1.20.1-3.5.jar",
+    "clientcrafting-1.20.1-2.1.jar",
+    "reset_controls_confirmation-forge-1.0.0-1.20.1.jar",
+    "CrashAssistant-forge-1.19-1.20.1-1.11.10.jar",
+    "ServerBrowser-1.20.1-FORGE-1.3.3.jar",
+}
 
 
 def check_7z_installed() -> str:
@@ -254,6 +266,18 @@ def classify_archive_mods(
         # Skip duplicate and disabled files
         if fn.endswith(".duplicate") or fn.endswith(".disabled"):
             result.duplicate_files_skipped.append(entry.path)
+            continue
+
+        # Check if unindexed client mod
+        if fn in UNINDEXED_CLIENT_MODS:
+            result.client_mods_excluded.append(
+                PackwizMod(
+                    slug=fn.replace(".jar", ""),
+                    name=fn.replace(".jar", ""),
+                    filename=fn,
+                    side="client",
+                )
+            )
             continue
 
         # Check if mapped by packwiz index
@@ -376,6 +400,64 @@ def extract_server_mods(
     finally:
         if os.path.exists(list_file_path):
             os.remove(list_file_path)
+
+
+def patch_mod_incompatibilities(target_dir: Path) -> None:
+    """Fix upstream mod incompatibilities in staged jars."""
+    create_jar = next(target_dir.glob("create-*.jar"), None)
+    if create_jar:
+        bad_files = {
+            "data/create/recipes/blasting/silver_ingot_compat_galosphere.json",
+            "data/create/recipes/smelting/silver_ingot_compat_galosphere.json",
+            "data/create/advancements/recipes/misc/blasting/silver_ingot_compat_galosphere.json",
+            "data/create/advancements/recipes/misc/smelting/silver_ingot_compat_galosphere.json",
+        }
+        temp_jar = create_jar.with_suffix(".tmp.jar")
+        modified = False
+        with zipfile.ZipFile(create_jar, "r") as zin, zipfile.ZipFile(temp_jar, "w") as zout:
+            for item in zin.infolist():
+                if item.filename in bad_files:
+                    modified = True
+                    continue
+                zout.writestr(item, zin.read(item.filename))
+        if modified:
+            temp_jar.replace(create_jar)
+            print("  [OK] Patched Create mod: removed incompatible galosphere silver recipes")
+        elif temp_jar.exists():
+            temp_jar.unlink()
+
+
+def patch_connectivity_config(target_dir: Path) -> None:
+    """Disable malformed traffic detection in Connectivity mod if config exists."""
+    import json
+
+    config_candidates = [
+        target_dir / "connectivity.json",
+        target_dir.parent / "config" / "connectivity.json",
+        target_dir / "config" / "connectivity.json",
+    ]
+    for cfg in config_candidates:
+        if cfg.is_file():
+            try:
+                data = json.loads(cfg.read_text(encoding="utf-8"))
+                malformed = data.get("malformedtraffic", {})
+                changed = False
+                if malformed.get("enabled") is not False:
+                    malformed["enabled"] = False
+                    changed = True
+                whitelist = set(malformed.get("proxywhitelist", []))
+                loopbacks = {"127.0.0.1", "::1", "0:0:0:0:0:0:0:1"}
+                if not loopbacks.issubset(whitelist):
+                    malformed["proxywhitelist"] = list(whitelist | loopbacks)
+                    changed = True
+                if changed:
+                    data["malformedtraffic"] = malformed
+                    cfg.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                    print(
+                        f"  [OK] Patched {cfg.name}: disabled malformed traffic check"
+                    )
+            except Exception as e:
+                print(f"  [WARN] Failed to patch {cfg}: {e}", file=sys.stderr)
 
 
 def upload_via_rsync_or_scp(source_dir: Path, remote_dest: str, dry_run: bool = False) -> bool:
@@ -645,7 +727,11 @@ def main() -> int:
                     file=sys.stderr,
                 )
 
-    # 7. Upload if requested
+    # 7. Apply mod compatibility patches
+    patch_mod_incompatibilities(args.extract_dir)
+    patch_connectivity_config(args.extract_dir)
+
+    # 8. Upload if requested
     if args.upload_ssh:
         print(f"\nUploading server mods to {args.upload_ssh}...")
         ok = upload_via_rsync_or_scp(args.extract_dir, args.upload_ssh, dry_run=False)
