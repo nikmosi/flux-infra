@@ -20,6 +20,8 @@ resources:
 - lldap.yaml
 - locust.yaml
 - longhorn.yaml
+- minecraft-dashboard.yaml
+- minecraft.yaml
 - ntfy-mcp.yaml
 - ntfy.yaml
 - pgadmin.yaml
