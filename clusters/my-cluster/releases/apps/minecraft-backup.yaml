@@ -1,0 +1,191 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: minecraft-backup
+  namespace: apps
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: minecraft-backup-apps
+  namespace: apps
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create", "get"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: minecraft-backup-apps
+  namespace: apps
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+subjects:
+  - kind: ServiceAccount
+    name: minecraft-backup
+    namespace: apps
+roleRef:
+  kind: Role
+  name: minecraft-backup-apps
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: minecraft-backup-longhorn
+  namespace: longhorn-system
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+rules:
+  - apiGroups: ["longhorn.io"]
+    resources: ["snapshots"]
+    verbs: ["create", "get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: minecraft-backup-longhorn
+  namespace: longhorn-system
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+subjects:
+  - kind: ServiceAccount
+    name: minecraft-backup
+    namespace: apps
+roleRef:
+  kind: Role
+  name: minecraft-backup-longhorn
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: minecraft-backup
+  namespace: apps
+  labels:
+    app.kubernetes.io/name: minecraft-backup
+  annotations:
+    kube-score/ignore: "pod-networkpolicy,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,container-security-context-readonlyrootfilesystem"
+spec:
+  schedule: "0 */4 * * *"
+  startingDeadlineSeconds: 300
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: minecraft-backup
+          annotations:
+            kube-score/ignore: "pod-networkpolicy,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,container-security-context-readonlyrootfilesystem"
+        spec:
+          serviceAccountName: minecraft-backup
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: acemagic
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: snapshot-runner
+              image: bitnami/kubectl:latest
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: false
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+
+                  POD="minecraft-0"
+                  NAMESPACE="apps"
+                  LONGHORN_NS="longhorn-system"
+                  RETAIN_COUNT=6
+
+                  echo "==> 1. Checking if Minecraft server pod is Running..."
+                  PHASE=$(kubectl get pod "${POD}" -n "${NAMESPACE}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+                  if [ "${PHASE}" != "Running" ]; then
+                    echo "Minecraft pod ${POD} is not in Running state (current phase: ${PHASE}). Skipping snapshot."
+                    exit 0
+                  fi
+
+                  echo "==> 2. Disabling automatic saving and flushing chunks to disk via RCON..."
+                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-off
+                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli "save-all flush"
+
+                  # Trap ensures save-on is always re-enabled even if snapshot command fails
+                  trap 'echo "==> [TRAP] Ensuring automatic saving is re-enabled..."; kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-on || true' EXIT
+
+                  echo "==> 3. Getting Longhorn volume name for minecraft-data PVC..."
+                  VOL=$(kubectl get pvc -n "${NAMESPACE}" minecraft-data -o jsonpath='{.spec.volumeName}')
+                  if [ -z "${VOL}" ]; then
+                    echo "ERROR: Failed to retrieve volumeName for PVC minecraft-data" >&2
+                    exit 1
+                  fi
+
+                  SNAP_NAME="mc-snap-$(date +%Y%m%d-%H%M%S)"
+                  echo "==> 4. Creating Longhorn Snapshot '${SNAP_NAME}' for volume '${VOL}'..."
+                  cat <<EOF | kubectl apply -f -
+                  apiVersion: longhorn.io/v1beta2
+                  kind: Snapshot
+                  metadata:
+                    name: ${SNAP_NAME}
+                    namespace: ${LONGHORN_NS}
+                    labels:
+                      app: minecraft-backup
+                  spec:
+                    createSnapshot: true
+                    volume: ${VOL}
+                  EOF
+
+                  echo "==> 5. Snapshot successfully requested. Re-enabling autosave..."
+                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-on
+                  trap - EXIT
+
+                  echo "==> 6. Pruning old snapshots (retaining last ${RETAIN_COUNT})..."
+                  SNAPS=$(kubectl get snapshots.longhorn.io -n "${LONGHORN_NS}" -l app=minecraft-backup --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
+                  COUNT=$(echo "${SNAPS}" | wc -w)
+                  if [ "${COUNT}" -gt "${RETAIN_COUNT}" ]; then
+                    TO_DELETE=$((COUNT - RETAIN_COUNT))
+                    echo "Total snapshots: ${COUNT}. Deleting oldest ${TO_DELETE}..."
+                    for s in $(echo "${SNAPS}" | tr ' ' '\n' | head -n "${TO_DELETE}"); do
+                      echo "  Deleting old snapshot: ${s}"
+                      kubectl delete snapshot.longhorn.io -n "${LONGHORN_NS}" "${s}" --wait=false || true
+                    done
+                  else
+                    echo "Snapshots count (${COUNT}) is within retention limit (${RETAIN_COUNT})."
+                  fi
+
+                  echo "==> [OK] Minecraft backup and Longhorn snapshot workflow completed successfully!"
