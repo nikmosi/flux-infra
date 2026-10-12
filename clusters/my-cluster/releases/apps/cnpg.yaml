@@ -73,3 +73,36 @@ spec:
 
   monitoring:
     enablePodMonitor: true
+
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://a353ae34-e55f-4d81-b4fd-902fffed4427/lab-postgres-cnpg
+      endpointURL: https://s3.twcstorage.ru
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-s3-backup-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-s3-backup-creds
+          key: SECRET_ACCESS_KEY
+        region:
+          name: cnpg-s3-backup-creds
+          key: REGION
+      wal:
+        compression: gzip
+        maxParallel: 2
+      data:
+        compression: gzip
+        jobs: 2
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: lab-postgres-backup
+  namespace: database
+spec:
+  schedule: "0 0 2 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: lab-postgres
