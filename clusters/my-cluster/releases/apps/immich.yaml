@@ -92,15 +92,25 @@ spec:
         library:
           existingClaim: immich-library
 
-    valkey:
-      enabled: true
-      persistence:
-        data:
-          enabled: true
-          type: emptyDir
-
     server:
       enabled: true
+      defaultPodOptions:
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      controllers:
+        main:
+          containers:
+            main:
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
       resources:
         requests:
           cpu: 100m
@@ -128,8 +138,49 @@ spec:
               hosts:
                 - immich.xinfra.ru
 
+    valkey:
+      enabled: true
+      defaultPodOptions:
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      controllers:
+        main:
+          containers:
+            main:
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+      persistence:
+        data:
+          enabled: true
+          type: emptyDir
+
     machine-learning:
       enabled: true
+      defaultPodOptions:
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      controllers:
+        main:
+          containers:
+            main:
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
       resources:
         requests:
           cpu: 200m
