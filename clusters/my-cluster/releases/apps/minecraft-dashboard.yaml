@@ -113,7 +113,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_healthy{server_host=~\"$server\"}",
+              "expr": "max by (server_host) (minecraft_status_healthy{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "{{server_host}}",
               "range": true,
@@ -176,7 +176,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_players_online_count{server_host=~\"$server\"}",
+              "expr": "max by (server_host) (minecraft_status_players_online_count{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "Online",
               "range": true,
@@ -247,7 +247,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_response_time_seconds{server_host=~\"$server\"}",
+              "expr": "avg by (server_host) (minecraft_status_response_time_seconds{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "Ping",
               "range": true,
@@ -310,7 +310,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_players_max_count{server_host=~\"$server\"}",
+              "expr": "max by (server_host) (minecraft_status_players_max_count{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "Max Players",
               "range": true,
@@ -453,7 +453,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_players_online_count{server_host=~\"$server\"}",
+              "expr": "max by (server_host) (minecraft_status_players_online_count{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "online ({{server_host}})",
               "range": true,
@@ -466,7 +466,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_players_max_count{server_host=~\"$server\"}",
+              "expr": "max by (server_host) (minecraft_status_players_max_count{server_host=~\"\"})",
               "hide": false,
               "interval": "",
               "legendFormat": "max ({{server_host}})",
@@ -590,7 +590,7 @@ data:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "minecraft_status_response_time_seconds{server_host=~\"$server\"}",
+              "expr": "avg by (server_host) (minecraft_status_response_time_seconds{server_host=~\"\"})",
               "interval": "",
               "legendFormat": "ping ({{server_host}})",
               "range": true,
@@ -668,7 +668,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "rate(mc_server_tick_seconds_count[1m])",
+              "expr": "max(rate(mc_server_tick_seconds_count[1m]))",
               "refId": "A"
             }
           ]
@@ -739,7 +739,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "(rate(mc_server_tick_seconds_sum[1m]) / rate(mc_server_tick_seconds_count[1m])) * 1000",
+              "expr": "avg(rate(mc_server_tick_seconds_sum[1m]) / rate(mc_server_tick_seconds_count[1m])) * 1000",
               "refId": "A"
             }
           ]
@@ -943,7 +943,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "rate(mc_server_tick_seconds_count[1m])",
+              "expr": "max(rate(mc_server_tick_seconds_count[1m]))",
               "legendFormat": "TPS",
               "refId": "A"
             },
@@ -952,7 +952,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "(rate(mc_server_tick_seconds_sum[1m]) / rate(mc_server_tick_seconds_count[1m])) * 1000",
+              "expr": "avg(rate(mc_server_tick_seconds_sum[1m]) / rate(mc_server_tick_seconds_count[1m])) * 1000",
               "legendFormat": "MSPT (ms)",
               "refId": "B"
             }
@@ -1020,7 +1020,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "jvm_memory_bytes_used{area=\"heap\"}",
+              "expr": "max(jvm_memory_bytes_used{area=\"heap\"})",
               "legendFormat": "Heap Used",
               "refId": "A"
             },
@@ -1029,7 +1029,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "jvm_memory_bytes_max{area=\"heap\"}",
+              "expr": "max(jvm_memory_bytes_max{area=\"heap\"})",
               "legendFormat": "Heap Max",
               "refId": "B"
             }
@@ -1163,7 +1163,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "mc_dimension_chunks_loaded",
+              "expr": "max by (name) (mc_dimension_chunks_loaded)",
               "legendFormat": "{{name}}",
               "refId": "A"
             }
