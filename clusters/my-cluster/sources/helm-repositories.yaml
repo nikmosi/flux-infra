@@ -172,3 +172,13 @@ spec:
   interval: 1h
   timeout: 5m0s
   url: https://bythehugo.github.io/homebox-helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: immich
+  namespace: flux-system
+spec:
+  type: oci
+  interval: 1h
+  url: oci://ghcr.io/immich-app/immich-charts

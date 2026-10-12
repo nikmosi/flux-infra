@@ -20,6 +20,7 @@ resources:
 - lldap.yaml
 - locust.yaml
 - longhorn.yaml
+- minecraft-backup.yaml
 - minecraft-dashboard.yaml
 - minecraft.yaml
 - ntfy-mcp.yaml
@@ -29,6 +30,8 @@ resources:
 - renovate.yaml
 - supersync.yaml
 - twitch-bot.yaml
+- immich.yaml
+- immich-postgres.yaml
 - vaultwarden.yaml
 - xray.yaml
 - zot.yaml

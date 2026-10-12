@@ -1,0 +1,100 @@
+---
+# ==============================================================================
+# Database Roles (Users) & Database
+# ==============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: immich-postgres-role-immich
+  namespace: database
+spec:
+  cluster:
+    name: immich-postgres
+  name: immich
+  login: true
+  superuser: true
+  createdb: true
+  createrole: true
+  passwordSecret:
+    name: immich-db-user
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: immich-postgres-db-immich
+  namespace: database
+spec:
+  cluster:
+    name: immich-postgres
+  name: immich
+  owner: immich
+
+---
+# ==============================================================================
+# Immich Postgres Cluster with pgvecto.rs & Barman S3 Backup
+# ==============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: immich-postgres
+  namespace: database
+spec:
+  instances: 1
+  imageName: ghcr.io/tensorchord/cloudnative-pgvecto.rs:16-v0.8.4
+
+  primaryUpdateStrategy: unsupervised
+
+  storage:
+    storageClass: longhorn-low
+    size: 15Gi
+
+  walStorage:
+    storageClass: longhorn-low
+    size: 5Gi
+
+  bootstrap:
+    initdb:
+      database: immich
+      owner: immich
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS "vectors";
+        - CREATE EXTENSION IF NOT EXISTS "cube";
+        - CREATE EXTENSION IF NOT EXISTS "earthdistance";
+
+  postgresql:
+    parameters:
+      shared_preload_libraries: "vectors.so"
+      search_path: '"$user", public, vectors'
+      shared_buffers: "256MB"
+      max_connections: "100"
+
+  monitoring:
+    enablePodMonitor: true
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://a353ae34-e55f-4d81-b4fd-902fffed4427/immich-cnpg
+      endpointURL: https://s3.twcstorage.ru
+      s3Credentials:
+        accessKeyId:
+          name: immich-s3-backup-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: immich-s3-backup-creds
+          key: SECRET_ACCESS_KEY
+      wal:
+        compression: gzip
+        maxParallel: 2
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: immich-postgres-backup
+  namespace: database
+spec:
+  schedule: "0 0 3 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: immich-postgres
