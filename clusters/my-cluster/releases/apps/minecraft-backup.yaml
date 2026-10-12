@@ -135,57 +135,57 @@ spec:
                   RETAIN_COUNT=6
 
                   echo "==> 1. Checking if Minecraft server pod is Running..."
-                  PHASE=$(kubectl get pod "${POD}" -n "${NAMESPACE}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
-                  if [ "${PHASE}" != "Running" ]; then
-                    echo "Minecraft pod ${POD} is not in Running state (current phase: ${PHASE}). Skipping snapshot."
+                  PHASE=$$(kubectl get pod "$${POD}" -n "$${NAMESPACE}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+                  if [ "$${PHASE}" != "Running" ]; then
+                    echo "Minecraft pod $${POD} is not in Running state (current phase: $${PHASE}). Skipping snapshot."
                     exit 0
                   fi
 
                   echo "==> 2. Disabling automatic saving and flushing chunks to disk via RCON..."
-                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-off
-                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli "save-all flush"
+                  kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-off
+                  kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli "save-all flush"
 
                   # Trap ensures save-on is always re-enabled even if snapshot command fails
-                  trap 'echo "==> [TRAP] Ensuring automatic saving is re-enabled..."; kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-on || true' EXIT
+                  trap 'echo "==> [TRAP] Ensuring automatic saving is re-enabled..."; kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-on || true' EXIT
 
                   echo "==> 3. Getting Longhorn volume name for minecraft-data PVC..."
-                  VOL=$(kubectl get pvc -n "${NAMESPACE}" minecraft-data -o jsonpath='{.spec.volumeName}')
-                  if [ -z "${VOL}" ]; then
+                  VOL=$$(kubectl get pvc -n "$${NAMESPACE}" minecraft-data -o jsonpath='{.spec.volumeName}')
+                  if [ -z "$${VOL}" ]; then
                     echo "ERROR: Failed to retrieve volumeName for PVC minecraft-data" >&2
                     exit 1
                   fi
 
-                  SNAP_NAME="mc-snap-$(date +%Y%m%d-%H%M%S)"
-                  echo "==> 4. Creating Longhorn Snapshot '${SNAP_NAME}' for volume '${VOL}'..."
+                  SNAP_NAME="mc-snap-$$(date +%Y%m%d-%H%M%S)"
+                  echo "==> 4. Creating Longhorn Snapshot '$${SNAP_NAME}' for volume '$${VOL}'..."
                   cat <<EOF | kubectl apply -f -
                   apiVersion: longhorn.io/v1beta2
                   kind: Snapshot
                   metadata:
-                    name: ${SNAP_NAME}
-                    namespace: ${LONGHORN_NS}
+                    name: $${SNAP_NAME}
+                    namespace: $${LONGHORN_NS}
                     labels:
                       app: minecraft-backup
                   spec:
                     createSnapshot: true
-                    volume: ${VOL}
+                    volume: $${VOL}
                   EOF
 
                   echo "==> 5. Snapshot successfully requested. Re-enabling autosave..."
-                  kubectl exec -n "${NAMESPACE}" "${POD}" -c minecraft -- rcon-cli save-on
+                  kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-on
                   trap - EXIT
 
-                  echo "==> 6. Pruning old snapshots (retaining last ${RETAIN_COUNT})..."
-                  SNAPS=$(kubectl get snapshots.longhorn.io -n "${LONGHORN_NS}" -l app=minecraft-backup --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
-                  COUNT=$(echo "${SNAPS}" | wc -w)
-                  if [ "${COUNT}" -gt "${RETAIN_COUNT}" ]; then
-                    TO_DELETE=$((COUNT - RETAIN_COUNT))
-                    echo "Total snapshots: ${COUNT}. Deleting oldest ${TO_DELETE}..."
-                    for s in $(echo "${SNAPS}" | tr ' ' '\n' | head -n "${TO_DELETE}"); do
-                      echo "  Deleting old snapshot: ${s}"
-                      kubectl delete snapshot.longhorn.io -n "${LONGHORN_NS}" "${s}" --wait=false || true
+                  echo "==> 6. Pruning old snapshots (retaining last $${RETAIN_COUNT})...."
+                  SNAPS=$$(kubectl get snapshots.longhorn.io -n "$${LONGHORN_NS}" -l app=minecraft-backup --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
+                  COUNT=$$(echo "$${SNAPS}" | wc -w)
+                  if [ "$${COUNT}" -gt "$${RETAIN_COUNT}" ]; then
+                    TO_DELETE=$$((COUNT - RETAIN_COUNT))
+                    echo "Total snapshots: $${COUNT}. Deleting oldest $${TO_DELETE}..."
+                    for s in $$(echo "$${SNAPS}" | tr ' ' '\n' | head -n "$${TO_DELETE}"); do
+                      echo "  Deleting old snapshot: $${s}"
+                      kubectl delete snapshot.longhorn.io -n "$${LONGHORN_NS}" "$${s}" --wait=false || true
                     done
                   else
-                    echo "Snapshots count (${COUNT}) is within retention limit (${RETAIN_COUNT})."
+                    echo "Snapshots count ($${COUNT}) is within retention limit ($${RETAIN_COUNT})."
                   fi
 
                   echo "==> [OK] Minecraft backup and Longhorn snapshot workflow completed successfully!"
