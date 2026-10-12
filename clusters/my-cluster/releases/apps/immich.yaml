@@ -58,10 +58,24 @@ spec:
         namespace: flux-system
       interval: 1h
   values:
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
     controllers:
       main:
         containers:
           main:
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
             env:
               DB_HOSTNAME: "immich-postgres-rw.database.svc.cluster.local"
               DB_PORT: "5432"
