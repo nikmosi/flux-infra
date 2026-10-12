@@ -63,6 +63,9 @@ spec:
             - name: minecraft
               containerPort: 25565
               protocol: TCP
+            - name: mc-metrics
+              containerPort: 19565
+              protocol: TCP
           env:
             - name: EULA
               value: "TRUE"
@@ -202,5 +205,8 @@ spec:
       app.kubernetes.io/name: minecraft
   podMetricsEndpoints:
     - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+    - port: mc-metrics
       interval: 15s
       scrapeTimeout: 10s

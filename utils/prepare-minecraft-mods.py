@@ -145,6 +145,16 @@ SERVER_UTILITIES: list[UtilityMod] = [
             "https://cdn.modrinth.com/data/tyAKpqKg/versions/p5bijuHC/SAuth-2.0.0.jar",
         ],
     ),
+    UtilityMod(
+        name="Prometheus Exporter Forge",
+        purpose="Server metrics export for Prometheus & Grafana (/metrics)",
+        default_filename="Prometheus-Exporter-1.20.1-forge-1.2.1.jar",
+        filename_pattern=r"^Prometheus-Exporter-.*\.jar$",
+        urls=[
+            # Official GitHub release for Forge 1.20.1
+            "https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar",
+        ],
+    ),
 ]
 
 # Client-only mods present in archive that lack packwiz index entries
