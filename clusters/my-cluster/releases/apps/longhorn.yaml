@@ -39,6 +39,10 @@ spec:
       defaultClassReplicaCount: 3
     defaultSettings:
       defaultReplicaCount: 3
+    defaultBackupStore:
+      backupTarget: s3://a353ae34-e55f-4d81-b4fd-902fffed4427@ru-1/
+      backupTargetCredentialSecret: longhorn-backup-secret
+      pollInterval: 300
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -67,3 +71,13 @@ spec:
       name: mtls-strict
       namespace: networking
     secretName: wildcard-xinfra-ru-tls
+---
+apiVersion: longhorn.io/v1beta2
+kind: BackupTarget
+metadata:
+  name: default
+  namespace: longhorn-system
+spec:
+  backupTargetURL: s3://a353ae34-e55f-4d81-b4fd-902fffed4427@ru-1/
+  credentialSecret: longhorn-backup-secret
+  pollInterval: 5m0s
