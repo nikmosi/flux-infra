@@ -63,8 +63,9 @@ spec:
         - CREATE EXTENSION IF NOT EXISTS "earthdistance";
 
   postgresql:
+    shared_preload_libraries:
+      - "vectors.so"
     parameters:
-      shared_preload_libraries: "vectors.so"
       search_path: '"$user", public, vectors'
       shared_buffers: "256MB"
       max_connections: "100"
