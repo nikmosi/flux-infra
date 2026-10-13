@@ -42,6 +42,11 @@ spec:
       pullPolicy: Always
       tag: "latest"
 
+    podSecurityContext:
+      fsGroup: 1001
+      seccompProfile:
+        type: RuntimeDefault
+
     supersync:
       port: 1900
       host: "0.0.0.0"
