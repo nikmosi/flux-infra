@@ -65,6 +65,16 @@ spec:
                 value:
                   name: dind-sock
                   emptyDir: {}
+              - op: add
+                path: /spec/template/spec/containers/0/volumeMounts/-
+                value:
+                  name: tmp-dir
+                  mountPath: /tmp
+              - op: add
+                path: /spec/template/spec/volumes/-
+                value:
+                  name: tmp-dir
+                  emptyDir: {}
   values:
     knownLastVersion: true
     runner:
