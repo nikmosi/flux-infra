@@ -1,0 +1,14 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: super-productivity
+  namespace: flux-system
+spec:
+  interval: 12h
+  ref:
+    branch: master
+  url: https://github.com/super-productivity/super-productivity.git
+  ignore: |
+    /*
+    !/packages/super-sync-server/helm/supersync
