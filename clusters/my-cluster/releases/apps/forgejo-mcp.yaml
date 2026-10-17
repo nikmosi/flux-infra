@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: forgejo-mcp
-          image: zot.xinfra.ru/forgejo-mcp:v0.1.0 # {"$imagepolicy": "flux-system:forgejo-mcp:tag"}
+          image: v0.1.0 # {"$imagepolicy": "flux-system:forgejo-mcp:tag"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
