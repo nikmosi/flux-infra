@@ -10,10 +10,12 @@ resources:
 - forgejo-custom-templates.yaml
 - forgejo-runner.yaml
 - forgejo.yaml
+- forgejo-mcp.yaml
 - forgesync.yaml
 - gloria.yaml
 - goldilocks.yaml
 - homebox.yaml
+- homebox-mcp.yaml
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml
