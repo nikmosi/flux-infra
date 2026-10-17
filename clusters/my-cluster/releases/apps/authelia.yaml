@@ -322,8 +322,8 @@ spec:
       session:
         name: authelia_session
         same_site: lax
-        expiration: 1 hour
-        inactivity: 10 minutes
+        expiration: 14 days
+        inactivity: 1 day
         remember_me: 1 month
         encryption_key:
           secret_name: authelia-core
@@ -332,8 +332,8 @@ spec:
           - domain: xinfra.ru
             subdomain: auth
             same_site: lax
-            expiration: 1 hour
-            inactivity: 10 minutes
+            expiration: 14 days
+            inactivity: 1 day
         redis:
           enabled: false
 
@@ -372,11 +372,15 @@ spec:
             path: identity_providers.oidc.hmac.key
           lifespans:
             access_token: 1 hour
-            refresh_token: 8 hours
+            refresh_token: 30 days
             id_token: 1 hour
             authorize_code: 1 minute
             device_code: 10 minutes
-            custom: {}
+            custom:
+              gemini_spark:
+                access_token: 30 days
+                refresh_token: 90 days
+                id_token: 30 days
           enforce_pkce: public_clients_only
           enable_pkce_plain_challenge: false
           enable_jwt_access_token_stateless_introspection: false
@@ -602,6 +606,7 @@ spec:
               public: false
               authorization_policy: two_factor
               consent_mode: implicit
+              lifespan: gemini_spark
               claims_policy: default
               audience:
                 - https://mcp-homebox.xinfra.ru/mcp
