@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: homebox-mcp
-          image: zot.xinfra.ru/homebox-mcp:v0.1.0 # {"$imagepolicy": "flux-system:homebox-mcp"}
+          image: zot.xinfra.ru/homebox-mcp:v0.1.1 # {"$imagepolicy": "flux-system:homebox-mcp"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
