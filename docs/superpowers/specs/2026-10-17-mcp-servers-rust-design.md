@@ -1,8 +1,8 @@
 # Architecture Specification: Rust MCP Servers for Forgejo & Homebox
 
-**Date:** 2026-10-17  
-**Status:** Approved  
-**Classification:** Architectural  
+**Date:** 2026-10-17
+**Status:** Approved
+**Classification:** Architectural
 
 ---
 

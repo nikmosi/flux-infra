@@ -1,8 +1,8 @@
 # Architecture Specification: Rust MCP Server for Grep.app (`grep-mcp`)
 
-**Date:** 2026-10-18  
-**Status:** In Review  
-**Classification:** Architectural  
+**Date:** 2026-10-18
+**Status:** In Review
+**Classification:** Architectural
 
 ---
 

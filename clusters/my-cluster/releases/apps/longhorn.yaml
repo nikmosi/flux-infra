@@ -43,6 +43,9 @@ spec:
       backupTarget: s3://a353ae34-e55f-4d81-b4fd-902fffed4427@ru-1/
       backupTargetCredentialSecret: longhorn-backup-secret
       pollInterval: 300
+    metrics:
+      serviceMonitor:
+        enabled: true
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute

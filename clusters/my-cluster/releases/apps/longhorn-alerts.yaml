@@ -1,0 +1,110 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-alert-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+    - name: longhorn.rules
+      rules:
+        - alert: LonghornVolumeActualSpaceWarning
+          expr: (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} actual space is over 85%"
+            description: "Actual space used by Longhorn volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) is at {{ $value | printf \"%.1f\" }}% of provisioned capacity."
+
+        - alert: LonghornVolumeActualSpaceCritical
+          expr: (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) * 100 > 95
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} actual space is critically full (> 95%)"
+            description: "Actual space used by Longhorn volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) is at {{ $value | printf \"%.1f\" }}% of provisioned capacity."
+
+        - alert: LonghornDiskStorageWarning
+          expr: (longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn disk {{ $labels.disk }} on node {{ $labels.node }} is over 80% full"
+            description: "Longhorn disk storage usage for {{ $labels.disk }} on node {{ $labels.node }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: LonghornDiskStorageCritical
+          expr: (longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn disk {{ $labels.disk }} on node {{ $labels.node }} is critically full (> 90%)"
+            description: "Longhorn disk storage usage for {{ $labels.disk }} on node {{ $labels.node }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: LonghornNodeStorageWarning
+          expr: (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn storage on node {{ $labels.node }} is over 80% full"
+            description: "Used storage on Longhorn node {{ $labels.node }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: LonghornNodeStorageCritical
+          expr: (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn storage on node {{ $labels.node }} is critically full (> 90%)"
+            description: "Used storage on Longhorn node {{ $labels.node }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: LonghornVolumeDegraded
+          expr: longhorn_volume_robustness == 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is degraded"
+            description: "Longhorn volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) has degraded robustness (replica failed, rebuilding, or insufficient replicas)."
+
+        - alert: LonghornVolumeFault
+          expr: longhorn_volume_robustness == 3
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is faulted"
+            description: "Longhorn volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) is in Fault state and unavailable!"
+
+        - alert: LonghornNodeDown
+          expr: (avg(longhorn_node_count_total) or on() vector(0)) - (count(longhorn_node_status{condition="ready"} == 1) or on() vector(0)) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "One or more Longhorn nodes are offline"
+            description: "{{ $value }} Longhorn storage node(s) are offline or not ready for more than 5 minutes."
+
+        - alert: LonghornBackupFailed
+          expr: longhorn_backup_state == 4
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn backup failed for volume {{ $labels.volume }}"
+            description: "Backup {{ $labels.backup }} for volume {{ $labels.volume }} (recurring job: {{ $labels.recurring_job }}) failed."
+
+        - alert: LonghornBackupStale
+          expr: (time() - longhorn_volume_last_backup_at{pvc!=""} > 100800) and (longhorn_volume_last_backup_at{pvc!=""} > 0)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} has no recent backup"
+            description: "Volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) has not had a successful backup in over 28 hours."

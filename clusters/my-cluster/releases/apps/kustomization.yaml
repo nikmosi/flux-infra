@@ -20,6 +20,8 @@ resources:
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml
+- longhorn-alerts.yaml
+- longhorn-dashboard.yaml
 - longhorn.yaml
 - minecraft-backup.yaml
 - minecraft-dashboard.yaml
