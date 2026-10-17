@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: forgejo-mcp
-          image: zot.xinfra.ru/forgejo-mcp:v0.1.1 # {"$imagepolicy": "flux-system:forgejo-mcp"}
+          image: zot.xinfra.ru/forgejo-mcp:v0.1.2 # {"$imagepolicy": "flux-system:forgejo-mcp"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
