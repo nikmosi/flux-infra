@@ -1,0 +1,25 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: grep-mcp
+  namespace: flux-system
+spec:
+  image: zot.xinfra.ru/grep-mcp
+  interval: 2m
+  secretRef:
+    name: zot-reader
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: grep-mcp
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: grep-mcp
+  filterTags:
+    pattern: "^v(?P<semver>.*)"
+  policy:
+    semver:
+      range: ">=0.1.0 <1.0.0"

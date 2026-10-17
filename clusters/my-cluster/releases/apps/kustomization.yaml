@@ -14,6 +14,7 @@ resources:
 - forgesync.yaml
 - gloria.yaml
 - goldilocks.yaml
+- grep-mcp.yaml
 - homebox.yaml
 - homebox-mcp.yaml
 - kube-prometheus-stack.yaml
