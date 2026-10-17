@@ -37,6 +37,9 @@ spec:
         namespace: flux-system
       interval: 1h
   values:
+    service:
+      annotations:
+        lbipam.cilium.io/ips: "10.10.0.1"
     deployment:
       replicas: 2
       podDisruptionBudget:

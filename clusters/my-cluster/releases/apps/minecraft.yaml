@@ -182,6 +182,8 @@ metadata:
   namespace: apps
   labels:
     app.kubernetes.io/name: minecraft
+  annotations:
+    lbipam.cilium.io/ips: "10.10.0.2"
 spec:
   type: LoadBalancer
   selector:
