@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: grep-mcp
-          image: zot.xinfra.ru/grep-mcp:v0.1.1 # {"$imagepolicy": "flux-system:grep-mcp"}
+          image: zot.xinfra.ru/grep-mcp:v0.1.0 # {"$imagepolicy": "flux-system:grep-mcp"}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
