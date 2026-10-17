@@ -11,3 +11,28 @@ spec:
   secretRef:
     name: gloria-source
   url: ssh://git@forgejo-ssh.developer-tools.svc.cluster.local/nikmosi/gloria.git
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: gloria
+  namespace: flux-system
+spec:
+  image: zot.xinfra.ru/gloria
+  interval: 2m
+  secretRef:
+    name: zot-reader
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: gloria
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: gloria
+  filterTags:
+    pattern: "^v(?P<semver>.*)"
+  policy:
+    semver:
+      range: ">=0.1.0 <1.0.0"
