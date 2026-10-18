@@ -6,6 +6,8 @@ metadata:
   namespace: monitoring
   labels:
     role: alert-rules
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 spec:
   groups:
     - name: longhorn.rules
