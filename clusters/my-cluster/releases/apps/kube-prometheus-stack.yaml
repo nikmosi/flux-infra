@@ -367,8 +367,22 @@ spec:
     prometheus:
       enabled: true
       ingress:
-        enabled: false
+        enabled: true
+        ingressClassName: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.middlewares: security-forwardauth-authelia@kubernetescrd
+        hosts:
+          - prometheus.xinfra.ru
+        paths:
+          - /api/v1/write
+        pathType: Prefix
+        tls:
+          - hosts:
+              - prometheus.xinfra.ru
+            secretName: wildcard-xinfra-ru-tls
       prometheusSpec:
+        enableRemoteWriteReceiver: true
         replicas: 1
         shards: 1
         scrapeInterval: 60s

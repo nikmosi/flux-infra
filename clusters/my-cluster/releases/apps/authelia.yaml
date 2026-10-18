@@ -316,6 +316,11 @@ spec:
               - pgadmin.xinfra.ru
             policy: one_factor
           - domain:
+              - prometheus.xinfra.ru
+            resources:
+              - '^/api/v1/write([/?].*)?$'
+            policy: one_factor
+          - domain:
               - "*.xinfra.ru"
             policy: two_factor
 
