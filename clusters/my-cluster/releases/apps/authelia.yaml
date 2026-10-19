@@ -321,6 +321,12 @@ spec:
               - '^/api/v1/write([/?].*)?$'
             policy: one_factor
           - domain:
+              - loki.xinfra.ru
+            resources:
+              - '^/(loki/)?api/v1/push([/?].*)?$'
+              - '^/ready$'
+            policy: one_factor
+          - domain:
               - "*.xinfra.ru"
             policy: two_factor
 
