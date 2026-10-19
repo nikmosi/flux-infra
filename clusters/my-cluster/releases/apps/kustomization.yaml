@@ -3,6 +3,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - adguard.yaml
+- alloy.yaml
 - authelia.yaml
 - cnpg-databases.yaml
 - cnpg.yaml
@@ -20,8 +21,11 @@ resources:
 - kube-prometheus-stack.yaml
 - lldap.yaml
 - locust.yaml
+- loki-datasource.yaml
+- loki.yaml
 - longhorn-alerts.yaml
 - longhorn-dashboard.yaml
+- longhorn-servicemonitor.yaml
 - longhorn.yaml
 - minecraft-backup.yaml
 - minecraft-dashboard.yaml
