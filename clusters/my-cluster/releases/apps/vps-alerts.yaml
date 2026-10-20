@@ -1,0 +1,85 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: vps-alert-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  groups:
+    - name: vps.rules
+      rules:
+        - alert: VpsNodeDown
+          expr: up{job="prometheus.scrape.node_exporter"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "VPS instance {{ $labels.instance }} is unreachable / down"
+            description: "Node {{ $labels.instance }} has been unreachable for more than 2 minutes."
+
+        - alert: VpsXuiServiceDown
+          expr: node_systemd_unit_state{job="prometheus.scrape.node_exporter", name="x-ui.service", state="active"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "3x-ui service on {{ $labels.instance }} is down"
+            description: "Systemd unit x-ui.service on {{ $labels.instance }} is not active. VPN is unavailable."
+
+        - alert: VpsDiskSpaceWarning
+          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low disk space on {{ $labels.instance }} root partition (< 15%)"
+            description: "Disk space available on / for {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: VpsDiskSpaceCritical
+          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Critically low disk space on {{ $labels.instance }} root partition (< 5%)"
+            description: "Disk space available on / for {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}%."
+
+        - alert: VpsHighCpuUsage
+          expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{job="prometheus.scrape.node_exporter", mode="idle"}[5m])) * 100) > 90
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.instance }} (> 90%)"
+            description: "CPU usage on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% for over 10 minutes."
+
+        - alert: VpsHighMemoryUsage
+          expr: ((node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter"} - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 90
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage on {{ $labels.instance }} (> 90%)"
+            description: "Memory usage on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% for over 5 minutes."
+
+        - alert: VpsConntrackTableAlmostFull
+          expr: (node_nf_conntrack_entries{job="prometheus.scrape.node_exporter"} / node_nf_conntrack_entries_limit) * 100 > 85
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Conntrack table almost full on {{ $labels.instance }} (> 85%)"
+            description: "Connection tracking table on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% capacity. Risk of dropping VPN connections."
+
+        - alert: VpsNetworkPacketDrops
+          expr: (rate(node_network_receive_drop_total{job="prometheus.scrape.node_exporter", device=~"eth.*|ens.*"}[5m]) + rate(node_network_transmit_drop_total[5m])) > 50
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High network packet drop rate on {{ $labels.instance }} (device: {{ $labels.device }})"
+            description: "Network packet drop rate on {{ $labels.instance }} ({{ $labels.device }}) is {{ $value | printf \"%.1f\" }} drops/sec."
