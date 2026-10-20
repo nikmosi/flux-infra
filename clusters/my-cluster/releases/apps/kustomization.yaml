@@ -39,5 +39,7 @@ resources:
 - immich.yaml
 - immich-postgres.yaml
 - vaultwarden.yaml
+- vps-alerts.yaml
+- vps-nodes-dashboard.yaml
 - xray.yaml
 - zot.yaml
