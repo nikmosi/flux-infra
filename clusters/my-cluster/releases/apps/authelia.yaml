@@ -260,12 +260,12 @@ spec:
           enabled: true
           implementation: lldap
           address: ldap://lldap.security.svc.cluster.local:3890
-          timeout: 5 seconds
+          timeout: 15 seconds
           start_tls: false
           pooling:
-            enable: false
-            count: 5
-            retries: 2
+            enable: true
+            count: 10
+            retries: 3
             timeout: 10 seconds
           base_dn: dc=xinfra,dc=ru
           user: uid=authelia,ou=people,dc=xinfra,dc=ru
