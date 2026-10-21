@@ -587,16 +587,217 @@ def build_dashboard():
                 ],
             },
 
-            # Row 5: Loki Live Logs Stream
+            # Row 5: Docker & Containers (cAdvisor)
             {
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
                 "id": 19,
+                "title": "Docker & Containers (cAdvisor)",
+                "type": "row",
+            },
+            {
+                "gridPos": {"h": 4, "w": 4, "x": 0, "y": 29},
+                "id": 20,
+                "title": "Docker Daemon",
+                "type": "stat",
+                "datasource": PROMETHEUS_DS,
+                "options": {
+                    "colorMode": "background",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                            {
+                                "options": {
+                                    "0": {"color": "red", "index": 0, "text": "DOWN"},
+                                    "1": {"color": "green", "index": 1, "text": "ACTIVE"},
+                                },
+                                "type": "value",
+                            },
+                            {
+                                "options": {
+                                    "match": "null",
+                                    "result": {"color": "gray", "index": 2, "text": "NOT INSTALLED"},
+                                },
+                                "type": "special",
+                            },
+                        ],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [{"color": "gray", "value": None}, {"color": "green", "value": 1}],
+                        },
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'node_systemd_unit_state{job="prometheus.scrape.node_exporter", instance=~"$instance", name="docker.service", state="active"}',
+                        "instant": True,
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 4, "w": 4, "x": 4, "y": 29},
+                "id": 21,
+                "title": "cAdvisor Agent",
+                "type": "stat",
+                "datasource": PROMETHEUS_DS,
+                "options": {
+                    "colorMode": "background",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                            {
+                                "options": {
+                                    "0": {"color": "red", "index": 0, "text": "OFFLINE"},
+                                    "1": {"color": "green", "index": 1, "text": "ONLINE"},
+                                },
+                                "type": "value",
+                            },
+                            {
+                                "options": {
+                                    "match": "null",
+                                    "result": {"color": "gray", "index": 2, "text": "NOT INSTALLED"},
+                                },
+                                "type": "special",
+                            },
+                        ],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [{"color": "gray", "value": None}, {"color": "green", "value": 1}],
+                        },
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'up{job="prometheus.scrape.cadvisor", instance=~"$instance"}',
+                        "instant": True,
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 4, "w": 4, "x": 8, "y": 29},
+                "id": 22,
+                "title": "Running Containers",
+                "type": "stat",
+                "datasource": PROMETHEUS_DS,
+                "options": {
+                    "colorMode": "value",
+                    "graphMode": "none",
+                    "justifyMode": "auto",
+                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "short",
+                        "color": {"mode": "palette-classic"},
+                        "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": None}]},
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'count(count by (name) (container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""})) or vector(0)',
+                        "instant": True,
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 8, "w": 12, "x": 12, "y": 29},
+                "id": 23,
+                "title": "Container CPU Usage",
+                "type": "timeseries",
+                "datasource": PROMETHEUS_DS,
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percent",
+                        "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2},
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'sum by (name) (rate(container_cpu_usage_seconds_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[5m])) * 100',
+                        "legendFormat": "{{name}}",
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 8, "w": 6, "x": 0, "y": 33},
+                "id": 24,
+                "title": "Container Memory Usage",
+                "type": "timeseries",
+                "datasource": PROMETHEUS_DS,
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "bytes",
+                        "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2},
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'sum by (name) (container_memory_usage_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""})',
+                        "legendFormat": "{{name}}",
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 8, "w": 6, "x": 6, "y": 33},
+                "id": 25,
+                "title": "Container Network Throughput",
+                "type": "timeseries",
+                "datasource": PROMETHEUS_DS,
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "bps",
+                        "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2},
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'sum by (name) (rate(container_network_receive_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[1m])) * 8',
+                        "legendFormat": "{{name}} (RX)",
+                        "refId": "A",
+                    },
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'sum by (name) (rate(container_network_transmit_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[1m])) * 8',
+                        "legendFormat": "{{name}} (TX)",
+                        "refId": "B",
+                    },
+                ],
+            },
+
+            # Row 6: Loki Live Logs Stream
+            {
+                "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
+                "id": 26,
                 "title": "Loki Live Logs Stream",
                 "type": "row",
             },
             {
-                "gridPos": {"h": 5, "w": 24, "x": 0, "y": 29},
-                "id": 20,
+                "gridPos": {"h": 5, "w": 24, "x": 0, "y": 42},
+                "id": 27,
                 "title": "Log Volume by Level",
                 "type": "barchart",
                 "datasource": LOKI_DS,
@@ -634,8 +835,8 @@ def build_dashboard():
                 ],
             },
             {
-                "gridPos": {"h": 14, "w": 24, "x": 0, "y": 34},
-                "id": 21,
+                "gridPos": {"h": 14, "w": 24, "x": 0, "y": 47},
+                "id": 28,
                 "title": "Live Systemd & 3x-ui Logs",
                 "type": "logs",
                 "datasource": LOKI_DS,

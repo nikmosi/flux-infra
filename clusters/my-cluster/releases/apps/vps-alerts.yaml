@@ -30,6 +30,15 @@ spec:
             summary: "3x-ui service on {{ $labels.instance }} is down"
             description: "Systemd unit x-ui.service on {{ $labels.instance }} is not active. VPN is unavailable."
 
+        - alert: VpsDockerServiceDown
+          expr: node_systemd_unit_state{job="prometheus.scrape.node_exporter", name="docker.service", state="failed"} == 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Docker service on {{ $labels.instance }} has failed"
+            description: "Systemd unit docker.service on {{ $labels.instance }} entered failed state."
+
         - alert: VpsDiskSpaceWarning
           expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
           for: 5m

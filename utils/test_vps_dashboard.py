@@ -76,6 +76,10 @@ def test_manifest_structure():
     # Check required telemetry expressions
     assert "node_uname_info" in all_exprs or "up{" in all_exprs, "Missing node status query"
     assert "x-ui.service" in all_exprs, "Missing x-ui.service status query"
+    assert "docker.service" in all_exprs, "Missing docker.service status query"
+    assert "prometheus.scrape.cadvisor" in all_exprs or "container_last_seen" in all_exprs, "Missing cadvisor query"
+    assert "container_cpu_usage_seconds_total" in all_exprs, "Missing container cpu query"
+    assert "container_memory_usage_bytes" in all_exprs, "Missing container memory query"
     assert "node_network_receive_bytes_total" in all_exprs, "Missing network receive bandwidth query"
     assert "node_network_transmit_bytes_total" in all_exprs, "Missing network transmit bandwidth query"
     assert "node_nf_conntrack_entries" in all_exprs, "Missing conntrack connections query"
