@@ -4,13 +4,15 @@ Build the Grafana dashboard ConfigMap for External VPS & 3x-ui.
 """
 import json
 import os
+from typing import Any
+
 import yaml
 
 PROMETHEUS_DS = {"type": "prometheus", "uid": "prometheus"}
 LOKI_DS = {"type": "loki", "uid": "loki"}
 
 
-def build_dashboard():
+def build_dashboard() -> dict[str, Any]:
     dashboard = {
         "annotations": {
             "list": [
@@ -31,7 +33,7 @@ def build_dashboard():
         "links": [],
         "liveNow": False,
         "panels": [
-            # Row 1: Header / Quick Health
+            # Row 1: Header / Quick Health (y: 0, h: 4, 8 stat cards of w: 3 = 24)
             {
                 "gridPos": {"h": 4, "w": 3, "x": 0, "y": 0},
                 "id": 1,
@@ -46,6 +48,7 @@ def build_dashboard():
                 },
                 "fieldConfig": {
                     "defaults": {
+                        "noValue": "OFFLINE",
                         "mappings": [
                             {
                                 "options": {
@@ -85,6 +88,7 @@ def build_dashboard():
                 },
                 "fieldConfig": {
                     "defaults": {
+                        "noValue": "NOT INSTALLED",
                         "mappings": [
                             {
                                 "options": {
@@ -170,13 +174,13 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": '100 - (avg by (instance) (rate(node_cpu_seconds_total{job="prometheus.scrape.node_exporter", instance=~"$instance", mode="idle"}[5m])) * 100)',
+                        "expr": '100 - (avg by (instance) (rate(node_cpu_seconds_total{job="prometheus.scrape.node_exporter", instance=~"$instance", mode="idle"}[$__rate_interval])) * 100)',
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+                "gridPos": {"h": 4, "w": 3, "x": 12, "y": 0},
                 "id": 5,
                 "title": "RAM Usage",
                 "type": "stat",
@@ -206,13 +210,13 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": '((node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100',
+                        "expr": '((node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_MemAvailable_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}) / node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}) * 100',
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+                "gridPos": {"h": 4, "w": 3, "x": 15, "y": 0},
                 "id": 6,
                 "title": "Root Disk Usage",
                 "type": "stat",
@@ -242,14 +246,55 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": '(1 - (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100',
+                        "expr": '(1 - (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance", mountpoint="/"} / node_filesystem_size_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance", mountpoint="/"})) * 100',
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 20, "y": 0},
+                "gridPos": {"h": 4, "w": 3, "x": 18, "y": 0},
                 "id": 7,
+                "title": "Load Average",
+                "type": "stat",
+                "datasource": PROMETHEUS_DS,
+                "options": {
+                    "colorMode": "value",
+                    "graphMode": "area",
+                    "justifyMode": "auto",
+                    "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "short",
+                        "color": {"mode": "palette-classic"},
+                        "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": None}]},
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'node_load1{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
+                        "legendFormat": "1m",
+                        "refId": "A",
+                    },
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'node_load5{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
+                        "legendFormat": "5m",
+                        "refId": "B",
+                    },
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'node_load15{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
+                        "legendFormat": "15m",
+                        "refId": "C",
+                    },
+                ],
+            },
+            {
+                "gridPos": {"h": 4, "w": 3, "x": 21, "y": 0},
+                "id": 8,
                 "title": "Active Conntrack",
                 "type": "stat",
                 "datasource": PROMETHEUS_DS,
@@ -276,16 +321,16 @@ def build_dashboard():
                 ],
             },
 
-            # Row 2: VPN & Network Traffic
+            # Row 2: VPN & Network Traffic (y: 4..13)
             {
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
-                "id": 8,
+                "id": 9,
                 "title": "VPN & Network Traffic",
                 "type": "row",
             },
             {
                 "gridPos": {"h": 8, "w": 14, "x": 0, "y": 5},
-                "id": 9,
+                "id": 10,
                 "title": "Network Bandwidth ($interface)",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -306,20 +351,23 @@ def build_dashboard():
                         },
                         {
                             "matcher": {"id": "byName", "options": "Transmit (Egress)"},
-                            "properties": [{"id": "color", "value": {"fixedColor": "#3274D9", "mode": "fixed"}}],
+                            "properties": [
+                                {"id": "color", "value": {"fixedColor": "#3274D9", "mode": "fixed"}},
+                                {"id": "custom.transform", "value": "negative-Y"},
+                            ],
                         },
                     ],
                 },
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_receive_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m]) * 8',
+                        "expr": 'rate(node_network_receive_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval]) * 8',
                         "legendFormat": "Receive (Ingress)",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_transmit_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m]) * 8',
+                        "expr": 'rate(node_network_transmit_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval]) * 8',
                         "legendFormat": "Transmit (Egress)",
                         "refId": "B",
                     },
@@ -327,7 +375,7 @@ def build_dashboard():
             },
             {
                 "gridPos": {"h": 8, "w": 4, "x": 14, "y": 5},
-                "id": 10,
+                "id": 11,
                 "title": "Traffic Volume ($__range)",
                 "type": "stat",
                 "datasource": PROMETHEUS_DS,
@@ -362,7 +410,7 @@ def build_dashboard():
             },
             {
                 "gridPos": {"h": 8, "w": 6, "x": 18, "y": 5},
-                "id": 11,
+                "id": 12,
                 "title": "Network Drops & Errors ($interface)",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -376,41 +424,41 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_receive_drop_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m])',
+                        "expr": 'rate(node_network_receive_drop_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval])',
                         "legendFormat": "RX Drops",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_transmit_drop_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m])',
+                        "expr": 'rate(node_network_transmit_drop_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval])',
                         "legendFormat": "TX Drops",
                         "refId": "B",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_receive_errs_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m])',
+                        "expr": 'rate(node_network_receive_errs_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval])',
                         "legendFormat": "RX Errors",
                         "refId": "C",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_network_transmit_errs_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[1m])',
+                        "expr": 'rate(node_network_transmit_errs_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"$interface"}[$__rate_interval])',
                         "legendFormat": "TX Errors",
                         "refId": "D",
                     },
                 ],
             },
 
-            # Row 3: Host Internals & System Resources
+            # Row 3: Host Internals & System Resources (y: 13..21)
             {
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 13},
-                "id": 12,
+                "id": 13,
                 "title": "Host Internals & System Resources",
                 "type": "row",
             },
             {
                 "gridPos": {"h": 7, "w": 8, "x": 0, "y": 14},
-                "id": 13,
+                "id": 14,
                 "title": "CPU Breakdown by Mode",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -430,7 +478,7 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (mode) (rate(node_cpu_seconds_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}[5m]))',
+                        "expr": 'sum by (mode) (rate(node_cpu_seconds_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}[$__rate_interval]))',
                         "legendFormat": "{{mode}}",
                         "refId": "A",
                     }
@@ -438,7 +486,7 @@ def build_dashboard():
             },
             {
                 "gridPos": {"h": 7, "w": 8, "x": 8, "y": 14},
-                "id": 14,
+                "id": 15,
                 "title": "Memory Breakdown",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -452,12 +500,21 @@ def build_dashboard():
                             "stacking": {"group": "A", "mode": "normal"},
                         },
                     },
-                    "overrides": [],
+                    "overrides": [
+                        {
+                            "matcher": {"id": "byName", "options": "Swap Used"},
+                            "properties": [
+                                {"id": "custom.stacking", "value": {"group": "B", "mode": "none"}},
+                                {"id": "custom.lineStyle", "value": {"dash": [4, 4]}},
+                                {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}},
+                            ],
+                        }
+                    ],
                 },
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_MemAvailable_bytes',
+                        "expr": 'node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_MemFree_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_Buffers_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_Cached_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_SReclaimable_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
                         "legendFormat": "Used",
                         "refId": "A",
                     },
@@ -469,7 +526,7 @@ def build_dashboard():
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'node_memory_Cached_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
+                        "expr": 'node_memory_Cached_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} + node_memory_SReclaimable_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
                         "legendFormat": "Cached",
                         "refId": "C",
                     },
@@ -479,11 +536,17 @@ def build_dashboard():
                         "legendFormat": "Free",
                         "refId": "D",
                     },
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'node_memory_SwapTotal_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"} - node_memory_SwapFree_bytes{job="prometheus.scrape.node_exporter", instance=~"$instance"}',
+                        "legendFormat": "Swap Used",
+                        "refId": "E",
+                    },
                 ],
             },
             {
                 "gridPos": {"h": 7, "w": 8, "x": 16, "y": 14},
-                "id": 15,
+                "id": 16,
                 "title": "Disk I/O Rate",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -497,29 +560,29 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_disk_read_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}[1m])',
-                        "legendFormat": "Read",
+                        "expr": 'sum by (device) (rate(node_disk_read_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"vd[a-z]|sd[a-z]|nvme[0-9]n[0-9]|xvd[a-z]"}[$__rate_interval]))',
+                        "legendFormat": "{{device}} Read",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'rate(node_disk_written_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}[1m])',
-                        "legendFormat": "Write",
+                        "expr": 'sum by (device) (rate(node_disk_written_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance", device=~"vd[a-z]|sd[a-z]|nvme[0-9]n[0-9]|xvd[a-z]"}[$__rate_interval]))',
+                        "legendFormat": "{{device}} Write",
                         "refId": "B",
                     },
                 ],
             },
 
-            # Row 4: Connection Stack & Security
+            # Row 4: Connection Stack & Security (y: 21..29)
             {
                 "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
-                "id": 16,
+                "id": 17,
                 "title": "Connection Stack & Security",
                 "type": "row",
             },
             {
-                "gridPos": {"h": 6, "w": 12, "x": 0, "y": 22},
-                "id": 17,
+                "gridPos": {"h": 7, "w": 8, "x": 0, "y": 22},
+                "id": 18,
                 "title": "TCP Sockets State",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -552,8 +615,39 @@ def build_dashboard():
                 ],
             },
             {
-                "gridPos": {"h": 6, "w": 12, "x": 12, "y": 22},
-                "id": 18,
+                "gridPos": {"h": 7, "w": 8, "x": 8, "y": 22},
+                "id": 19,
+                "title": "TCP Retransmission Rate (%)",
+                "description": "Percentage of retransmitted TCP packets. Elevated retransmissions (>1-2%) indicate packet loss or network degradation directly impacting VPN tunnel quality.",
+                "type": "timeseries",
+                "datasource": PROMETHEUS_DS,
+                "fieldConfig": {
+                    "defaults": {
+                        "unit": "percent",
+                        "custom": {"drawStyle": "line", "lineWidth": 2},
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {"color": "green", "value": None},
+                                {"color": "#EAB839", "value": 1.0},
+                                {"color": "red", "value": 3.0},
+                            ],
+                        },
+                    },
+                    "overrides": [],
+                },
+                "targets": [
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": '(rate(node_netstat_Tcp_RetransSegs{job="prometheus.scrape.node_exporter", instance=~"$instance"}[$__rate_interval]) / (rate(node_netstat_Tcp_OutSegs{job="prometheus.scrape.node_exporter", instance=~"$instance"}[$__rate_interval]) + 0.001)) * 100',
+                        "legendFormat": "TCP Retransmit %",
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 7, "w": 8, "x": 16, "y": 22},
+                "id": 20,
                 "title": "Conntrack Table Saturation",
                 "type": "gauge",
                 "datasource": PROMETHEUS_DS,
@@ -587,16 +681,16 @@ def build_dashboard():
                 ],
             },
 
-            # Row 5: Docker & Containers (cAdvisor)
+            # Row 5: Docker & Containers (cAdvisor) (y: 29..42, symmetric 3x3 layout)
             {
-                "gridPos": {"h": 1, "w": 24, "x": 0, "y": 28},
-                "id": 19,
+                "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29},
+                "id": 21,
                 "title": "Docker & Containers (cAdvisor)",
                 "type": "row",
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 0, "y": 29},
-                "id": 20,
+                "gridPos": {"h": 4, "w": 8, "x": 0, "y": 30},
+                "id": 22,
                 "title": "Docker Daemon",
                 "type": "stat",
                 "datasource": PROMETHEUS_DS,
@@ -608,6 +702,7 @@ def build_dashboard():
                 },
                 "fieldConfig": {
                     "defaults": {
+                        "noValue": "NOT INSTALLED",
                         "mappings": [
                             {
                                 "options": {
@@ -615,14 +710,7 @@ def build_dashboard():
                                     "1": {"color": "green", "index": 1, "text": "ACTIVE"},
                                 },
                                 "type": "value",
-                            },
-                            {
-                                "options": {
-                                    "match": "null",
-                                    "result": {"color": "gray", "index": 2, "text": "NOT INSTALLED"},
-                                },
-                                "type": "special",
-                            },
+                            }
                         ],
                         "thresholds": {
                             "mode": "absolute",
@@ -641,8 +729,8 @@ def build_dashboard():
                 ],
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 4, "y": 29},
-                "id": 21,
+                "gridPos": {"h": 4, "w": 8, "x": 8, "y": 30},
+                "id": 23,
                 "title": "cAdvisor Agent",
                 "type": "stat",
                 "datasource": PROMETHEUS_DS,
@@ -654,6 +742,7 @@ def build_dashboard():
                 },
                 "fieldConfig": {
                     "defaults": {
+                        "noValue": "NOT INSTALLED",
                         "mappings": [
                             {
                                 "options": {
@@ -661,14 +750,7 @@ def build_dashboard():
                                     "1": {"color": "green", "index": 1, "text": "ONLINE"},
                                 },
                                 "type": "value",
-                            },
-                            {
-                                "options": {
-                                    "match": "null",
-                                    "result": {"color": "gray", "index": 2, "text": "NOT INSTALLED"},
-                                },
-                                "type": "special",
-                            },
+                            }
                         ],
                         "thresholds": {
                             "mode": "absolute",
@@ -687,8 +769,8 @@ def build_dashboard():
                 ],
             },
             {
-                "gridPos": {"h": 4, "w": 4, "x": 8, "y": 29},
-                "id": 22,
+                "gridPos": {"h": 4, "w": 8, "x": 16, "y": 30},
+                "id": 24,
                 "title": "Running Containers",
                 "type": "stat",
                 "datasource": PROMETHEUS_DS,
@@ -709,15 +791,15 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'count(count by (name) (container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""})) or vector(0)',
+                        "expr": 'count(count by (name) (container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})) or vector(0)',
                         "instant": True,
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 8, "w": 12, "x": 12, "y": 29},
-                "id": 23,
+                "gridPos": {"h": 8, "w": 8, "x": 0, "y": 34},
+                "id": 25,
                 "title": "Container CPU Usage",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -731,15 +813,15 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_cpu_usage_seconds_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[5m])) * 100',
+                        "expr": 'sum by (name) (rate(container_cpu_usage_seconds_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""}[$__rate_interval])) * 100',
                         "legendFormat": "{{name}}",
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 8, "w": 6, "x": 0, "y": 33},
-                "id": 24,
+                "gridPos": {"h": 8, "w": 8, "x": 8, "y": 34},
+                "id": 26,
                 "title": "Container Memory Usage",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -753,15 +835,21 @@ def build_dashboard():
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (container_memory_usage_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""})',
-                        "legendFormat": "{{name}}",
+                        "expr": 'sum by (name) (container_memory_working_set_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})',
+                        "legendFormat": "{{name}} (Working Set)",
                         "refId": "A",
-                    }
+                    },
+                    {
+                        "datasource": PROMETHEUS_DS,
+                        "expr": 'sum by (name) (container_memory_usage_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})',
+                        "legendFormat": "{{name}} (Total)",
+                        "refId": "B",
+                    },
                 ],
             },
             {
-                "gridPos": {"h": 8, "w": 6, "x": 6, "y": 33},
-                "id": 25,
+                "gridPos": {"h": 8, "w": 8, "x": 16, "y": 34},
+                "id": 27,
                 "title": "Container Network Throughput",
                 "type": "timeseries",
                 "datasource": PROMETHEUS_DS,
@@ -770,34 +858,41 @@ def build_dashboard():
                         "unit": "bps",
                         "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2},
                     },
-                    "overrides": [],
+                    "overrides": [
+                        {
+                            "matcher": {"id": "byRegexp", "options": ".*\\(TX\\).*"},
+                            "properties": [
+                                {"id": "custom.transform", "value": "negative-Y"},
+                            ],
+                        }
+                    ],
                 },
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_network_receive_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[1m])) * 8',
+                        "expr": 'sum by (name) (rate(container_network_receive_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", interface!="lo"}[$__rate_interval])) * 8',
                         "legendFormat": "{{name}} (RX)",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_network_transmit_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}[1m])) * 8',
+                        "expr": 'sum by (name) (rate(container_network_transmit_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", interface!="lo"}[$__rate_interval])) * 8',
                         "legendFormat": "{{name}} (TX)",
                         "refId": "B",
                     },
                 ],
             },
 
-            # Row 6: Loki Live Logs Stream
+            # Row 6: Loki Live Logs Stream (y: 42..62)
             {
-                "gridPos": {"h": 1, "w": 24, "x": 0, "y": 41},
-                "id": 26,
+                "gridPos": {"h": 1, "w": 24, "x": 0, "y": 42},
+                "id": 28,
                 "title": "Loki Live Logs Stream",
                 "type": "row",
             },
             {
-                "gridPos": {"h": 5, "w": 24, "x": 0, "y": 42},
-                "id": 27,
+                "gridPos": {"h": 5, "w": 24, "x": 0, "y": 43},
+                "id": 29,
                 "title": "Log Volume by Level",
                 "type": "barchart",
                 "datasource": LOKI_DS,
@@ -835,8 +930,8 @@ def build_dashboard():
                 ],
             },
             {
-                "gridPos": {"h": 14, "w": 24, "x": 0, "y": 47},
-                "id": 28,
+                "gridPos": {"h": 14, "w": 24, "x": 0, "y": 48},
+                "id": 30,
                 "title": "Live Systemd & 3x-ui Logs",
                 "type": "logs",
                 "datasource": LOKI_DS,
@@ -859,7 +954,7 @@ def build_dashboard():
         "refresh": "10s",
         "schemaVersion": 39,
         "style": "dark",
-        "tags": ["vps", "vpn", "3x-ui", "external"],
+        "tags": ["vps", "vpn", "3x-ui", "external", "docker"],
         "templating": {
             "list": [
                 {
@@ -885,7 +980,7 @@ def build_dashboard():
                 {
                     "current": {"selected": True, "text": "eth0", "value": "eth0"},
                     "datasource": PROMETHEUS_DS,
-                    "definition": 'label_values(node_network_receive_bytes_total{instance=~"$instance"}, device)',
+                    "definition": 'label_values(node_network_receive_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}, device)',
                     "hide": 0,
                     "includeAll": False,
                     "label": "Interface",
@@ -893,11 +988,32 @@ def build_dashboard():
                     "name": "interface",
                     "options": [],
                     "query": {
-                        "query": 'label_values(node_network_receive_bytes_total{instance=~"$instance"}, device)',
+                        "query": 'label_values(node_network_receive_bytes_total{job="prometheus.scrape.node_exporter", instance=~"$instance"}, device)',
                         "refId": "StandardVariableQuery",
                     },
                     "refresh": 2,
-                    "regex": "/^(eth.*|ens.*)$/",
+                    "regex": "/^(eth.*|ens.*|enp.*|eno.*)$/",
+                    "skipUrlSync": False,
+                    "sort": 1,
+                    "type": "query",
+                },
+                {
+                    "current": {"selected": True, "text": "All", "value": "$__all"},
+                    "datasource": PROMETHEUS_DS,
+                    "definition": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}, name)',
+                    "hide": 0,
+                    "includeAll": True,
+                    "allValue": ".*",
+                    "label": "Container",
+                    "multi": True,
+                    "name": "container",
+                    "options": [],
+                    "query": {
+                        "query": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}, name)',
+                        "refId": "StandardVariableQuery",
+                    },
+                    "refresh": 2,
+                    "regex": "",
                     "skipUrlSync": False,
                     "sort": 1,
                     "type": "query",
@@ -925,7 +1041,7 @@ def build_dashboard():
     return dashboard
 
 
-def str_presenter(dumper, data):
+def str_presenter(dumper: Any, data: str) -> Any:
     if len(data.splitlines()) > 1:
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
@@ -935,7 +1051,7 @@ yaml.add_representer(str, str_presenter)
 yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
 
 
-def main():
+def main() -> None:
     dashboard = build_dashboard()
     dashboard_json = json.dumps(dashboard, indent=2, ensure_ascii=False)
 
