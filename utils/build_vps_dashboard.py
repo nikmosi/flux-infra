@@ -791,7 +791,7 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'count(count by (name) (container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})) or vector(0)',
+                        "expr": 'count(count by (name) (container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor"})) or vector(0)',
                         "instant": True,
                         "refId": "A",
                     }
@@ -813,7 +813,7 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_cpu_usage_seconds_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""}[$__rate_interval])) * 100',
+                        "expr": 'sum by (name) (rate(container_cpu_usage_seconds_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor"}[$__rate_interval])) * 100',
                         "legendFormat": "{{name}}",
                         "refId": "A",
                     }
@@ -835,13 +835,13 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (container_memory_working_set_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})',
+                        "expr": 'sum by (name) (container_memory_working_set_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor"})',
                         "legendFormat": "{{name}} (Working Set)",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (container_memory_usage_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!=""})',
+                        "expr": 'sum by (name) (container_memory_usage_bytes{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor"})',
                         "legendFormat": "{{name}} (Total)",
                         "refId": "B",
                     },
@@ -870,13 +870,13 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_network_receive_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", interface!="lo"}[$__rate_interval])) * 8',
+                        "expr": 'sum by (name) (rate(container_network_receive_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor", interface!="lo"}[$__rate_interval])) * 8',
                         "legendFormat": "{{name}} (RX)",
                         "refId": "A",
                     },
                     {
                         "datasource": PROMETHEUS_DS,
-                        "expr": 'sum by (name) (rate(container_network_transmit_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", interface!="lo"}[$__rate_interval])) * 8',
+                        "expr": 'sum by (name) (rate(container_network_transmit_bytes_total{job="prometheus.scrape.cadvisor", instance=~"$instance", name=~"$container", name!="", name!="cadvisor", interface!="lo"}[$__rate_interval])) * 8',
                         "legendFormat": "{{name}} (TX)",
                         "refId": "B",
                     },
@@ -923,7 +923,7 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": LOKI_DS,
-                        "expr": 'sum by (detected_level) (count_over_time({instance=~"$instance", job=~"systemd-journal|docker"}[$__interval]))',
+                        "expr": 'sum by (detected_level) (count_over_time({instance=~"$instance", job=~"systemd-journal|docker", container!="cadvisor"}[$__interval]))',
                         "legendFormat": "{{detected_level}}",
                         "refId": "A",
                     }
@@ -966,7 +966,7 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": LOKI_DS,
-                        "expr": '{job="docker", instance=~"$instance", container=~"$container"} | line_format "[{{.container}}] {{__line__}}" |~ "(?i)$log_search"',
+                        "expr": '{job="docker", instance=~"$instance", container=~"$container", container!="cadvisor"} | line_format "[{{.container}}] {{__line__}}" |~ "(?i)$log_search"',
                         "refId": "A",
                     }
                 ],
@@ -1021,7 +1021,7 @@ def build_dashboard() -> dict[str, Any]:
                 {
                     "current": {"selected": True, "text": "All", "value": "$__all"},
                     "datasource": PROMETHEUS_DS,
-                    "definition": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}, name)',
+                    "definition": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!="", name!="cadvisor"}, name)',
                     "hide": 0,
                     "includeAll": True,
                     "allValue": ".*",
@@ -1030,7 +1030,7 @@ def build_dashboard() -> dict[str, Any]:
                     "name": "container",
                     "options": [],
                     "query": {
-                        "query": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!=""}, name)',
+                        "query": 'label_values(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"$instance", name!="", name!="cadvisor"}, name)',
                         "refId": "StandardVariableQuery",
                     },
                     "refresh": 2,

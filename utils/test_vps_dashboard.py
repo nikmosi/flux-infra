@@ -110,6 +110,7 @@ def test_manifest_structure() -> None:
     assert "node_nf_conntrack_entries" in all_exprs, "Missing conntrack connections query"
     assert "systemd-journal" in all_exprs or "instance=" in all_exprs, "Missing Loki log stream query"
     assert 'job="docker"' in all_exprs and "container=~" in all_exprs, "Missing container log stream query"
+    assert 'container!="cadvisor"' in all_exprs, "Missing cadvisor exclusion filter in logs"
     assert "line_format" in all_exprs, "Missing line_format for container logs"
 
     print("All dashboard assertions passed successfully!")
