@@ -1369,7 +1369,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count(count by (name) (container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\"})) or vector(0)",
+              "expr": "count(count by (name) (container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\"})) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -1406,7 +1406,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\"}[$__rate_interval])) * 100",
+              "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\"}[$__rate_interval])) * 100",
               "legendFormat": "{{name}}",
               "refId": "A"
             }
@@ -1443,7 +1443,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (name) (container_memory_working_set_bytes{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\"})",
+              "expr": "sum by (name) (container_memory_working_set_bytes{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\"})",
               "legendFormat": "{{name}} (Working Set)",
               "refId": "A"
             },
@@ -1452,7 +1452,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (name) (container_memory_usage_bytes{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\"})",
+              "expr": "sum by (name) (container_memory_usage_bytes{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\"})",
               "legendFormat": "{{name}} (Total)",
               "refId": "B"
             }
@@ -1502,7 +1502,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (name) (rate(container_network_receive_bytes_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\", interface!=\"lo\"}[$__rate_interval])) * 8",
+              "expr": "sum by (name) (rate(container_network_receive_bytes_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", interface!=\"lo\"}[$__rate_interval])) * 8",
               "legendFormat": "{{name}} (RX)",
               "refId": "A"
             },
@@ -1511,7 +1511,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (name) (rate(container_network_transmit_bytes_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", name!=\"cadvisor\", interface!=\"lo\"}[$__rate_interval])) * 8",
+              "expr": "sum by (name) (rate(container_network_transmit_bytes_total{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name=~\"$container\", name!=\"\", interface!=\"lo\"}[$__rate_interval])) * 8",
               "legendFormat": "{{name}} (TX)",
               "refId": "B"
             }
@@ -1754,7 +1754,7 @@ data:
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "definition": "label_values(container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name!=\"\", name!=\"cadvisor\"}, name)",
+            "definition": "label_values(container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name!=\"\"}, name)",
             "hide": 0,
             "includeAll": true,
             "allValue": ".*",
@@ -1763,7 +1763,7 @@ data:
             "name": "container",
             "options": [],
             "query": {
-              "query": "label_values(container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name!=\"\", name!=\"cadvisor\"}, name)",
+              "query": "label_values(container_last_seen{job=\"prometheus.scrape.cadvisor\", instance=~\"$instance\", name!=\"\"}, name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 2,
