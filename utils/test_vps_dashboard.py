@@ -109,6 +109,8 @@ def test_manifest_structure() -> None:
     assert "node_network_transmit_bytes_total" in all_exprs, "Missing network transmit bandwidth query"
     assert "node_nf_conntrack_entries" in all_exprs, "Missing conntrack connections query"
     assert "systemd-journal" in all_exprs or "instance=" in all_exprs, "Missing Loki log stream query"
+    assert 'job="docker"' in all_exprs and "container=~" in all_exprs, "Missing container log stream query"
+    assert "line_format" in all_exprs, "Missing line_format for container logs"
 
     print("All dashboard assertions passed successfully!")
 

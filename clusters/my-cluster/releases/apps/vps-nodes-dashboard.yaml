@@ -1607,7 +1607,7 @@ data:
                 "type": "loki",
                 "uid": "loki"
               },
-              "expr": "sum by (detected_level) (count_over_time({job=\"systemd-journal\", instance=~\"$instance\"}[$__interval]))",
+              "expr": "sum by (detected_level) (count_over_time({instance=~\"$instance\", job=~\"systemd-journal|docker\"}[$__interval]))",
               "legendFormat": "{{detected_level}}",
               "refId": "A"
             }
@@ -1616,7 +1616,7 @@ data:
         {
           "gridPos": {
             "h": 14,
-            "w": 24,
+            "w": 12,
             "x": 0,
             "y": 48
           },
@@ -1641,6 +1641,38 @@ data:
                 "uid": "loki"
               },
               "expr": "{job=\"systemd-journal\", instance=~\"$instance\"} |~ \"(?i)$log_search\"",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "gridPos": {
+            "h": 14,
+            "w": 12,
+            "x": 12,
+            "y": 48
+          },
+          "id": 31,
+          "title": "Live Container Logs ($container)",
+          "type": "logs",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "options": {
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "{job=\"docker\", instance=~\"$instance\", container=~\"$container\"} | line_format \"[{{.container}}] {{__line__}}\" |~ \"(?i)$log_search\"",
               "refId": "A"
             }
           ]

@@ -923,14 +923,14 @@ def build_dashboard() -> dict[str, Any]:
                 "targets": [
                     {
                         "datasource": LOKI_DS,
-                        "expr": 'sum by (detected_level) (count_over_time({job="systemd-journal", instance=~"$instance"}[$__interval]))',
+                        "expr": 'sum by (detected_level) (count_over_time({instance=~"$instance", job=~"systemd-journal|docker"}[$__interval]))',
                         "legendFormat": "{{detected_level}}",
                         "refId": "A",
                     }
                 ],
             },
             {
-                "gridPos": {"h": 14, "w": 24, "x": 0, "y": 48},
+                "gridPos": {"h": 14, "w": 12, "x": 0, "y": 48},
                 "id": 30,
                 "title": "Live Systemd & 3x-ui Logs",
                 "type": "logs",
@@ -946,6 +946,27 @@ def build_dashboard() -> dict[str, Any]:
                     {
                         "datasource": LOKI_DS,
                         "expr": '{job="systemd-journal", instance=~"$instance"} |~ "(?i)$log_search"',
+                        "refId": "A",
+                    }
+                ],
+            },
+            {
+                "gridPos": {"h": 14, "w": 12, "x": 12, "y": 48},
+                "id": 31,
+                "title": "Live Container Logs ($container)",
+                "type": "logs",
+                "datasource": LOKI_DS,
+                "options": {
+                    "showLabels": False,
+                    "wrapLogMessage": True,
+                    "enableLogDetails": True,
+                    "sortOrder": "Descending",
+                    "dedupStrategy": "none",
+                },
+                "targets": [
+                    {
+                        "datasource": LOKI_DS,
+                        "expr": '{job="docker", instance=~"$instance", container=~"$container"} | line_format "[{{.container}}] {{__line__}}" |~ "(?i)$log_search"',
                         "refId": "A",
                     }
                 ],
