@@ -74,13 +74,17 @@ spec:
             - name: VERSION
               value: "1.20.1"
             - name: FORGE_VERSION
-              value: "47.4.26"
+              value: "47.4.0"
             - name: MEMORY
               value: "10G"
             - name: JVM_XX_OPTS
               value: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC"
             - name: MOTD
-              value: "Modded Minecraft 1.20.1 Server"
+              value: "All the Mods 9 - No Frills"
+            - name: ALLOW_FLIGHT
+              value: "TRUE"
+            - name: MAX_TICK_TIME
+              value: "180000"
             - name: ENABLE_RCON
               value: "true"
             - name: RCON_PORT
