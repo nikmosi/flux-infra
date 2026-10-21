@@ -100,6 +100,23 @@ def test_longhorn_dashboard():
         h = sp.get("gridPos", {}).get("h", 0)
         assert h <= 4, f"Top KPI stat panel '{sp.get('title')}' is too tall (h={h} > 4), harms scannability!"
 
+    # 6. Check Table panel safety against Grafana Scenes runtime crashes:
+    for p in all_panels:
+        if p.get("type") == "table":
+            footer = p.get("options", {}).get("footer")
+            if footer and footer.get("show"):
+                assert "reducer" in footer and isinstance(footer["reducer"], list) and len(footer["reducer"]) > 0, (
+                    f"Table panel '{p.get('title')}' has invalid footer without reducer list: {footer}"
+                )
+            for ov in p.get("fieldConfig", {}).get("overrides", []):
+                for prop in ov.get("properties", []):
+                    if prop.get("id") == "custom.cellOptions":
+                        copt = prop.get("value", {})
+                        if copt.get("type") == "color-background":
+                            assert "mode" in copt, (
+                                f"Table panel '{p.get('title')}' override '{ov.get('matcher')}' has color-background cellOptions without 'mode' (causes Grafana React crash!)"
+                            )
+
     print(f"Validation successful! Total panels checked: {len(all_panels)}")
 
 

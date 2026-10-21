@@ -1,11 +1,10 @@
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: longhorn-grafana-dashboard
   namespace: apps
   labels:
-    grafana_dashboard: "1"
+    grafana_dashboard: '1'
   annotations:
     kustomize.toolkit.fluxcd.io/substitute: disabled
 data:
@@ -793,6 +792,10 @@ data:
                   {
                     "id": "max",
                     "value": 100
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 110
                   }
                 ]
               },
@@ -805,8 +808,13 @@ data:
                   {
                     "id": "custom.cellOptions",
                     "value": {
+                      "mode": "basic",
                       "type": "color-background"
                     }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 100
                   },
                   {
                     "id": "mappings",
@@ -864,8 +872,13 @@ data:
                   {
                     "id": "custom.cellOptions",
                     "value": {
+                      "mode": "basic",
                       "type": "color-background"
                     }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 90
                   },
                   {
                     "id": "mappings",
@@ -907,12 +920,12 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Volume"
+                  "options": "Namespace"
                 },
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 240
+                    "value": 130
                   }
                 ]
               },
@@ -931,12 +944,44 @@ data:
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Namespace"
+                  "options": "Capacity"
                 },
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 140
+                    "value": 95
+                  },
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Actual Size"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 95
+                  },
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Volume"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 220
                   }
                 ]
               }
@@ -953,6 +998,10 @@ data:
             "cellHeight": "sm",
             "footer": {
               "countRows": true,
+              "fields": "",
+              "reducer": [
+                "count"
+              ],
               "show": true
             },
             "showHeader": true,
@@ -1045,12 +1094,12 @@ data:
                 "indexByName": {
                   "pvc_namespace": 0,
                   "pvc": 1,
-                  "volume": 2,
-                  "Value #robustness": 3,
-                  "Value #state": 4,
-                  "Value #capacity": 5,
-                  "Value #actual_size": 6,
-                  "Value #usage_percent": 7
+                  "Value #robustness": 2,
+                  "Value #state": 3,
+                  "Value #usage_percent": 4,
+                  "Value #actual_size": 5,
+                  "Value #capacity": 6,
+                  "volume": 7
                 },
                 "renameByName": {
                   "Value #actual_size": "Actual Size",
@@ -1081,7 +1130,8 @@ data:
               }
             }
           ],
-          "type": "table"
+          "type": "table",
+          "pluginVersion": "11.4.0"
         },
         {
           "datasource": {
@@ -1211,8 +1261,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by (volume) (longhorn_volume_read_throughput{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Read: {{volume}}",
+              "expr": "sum by (pvc_namespace, pvc) (longhorn_volume_read_throughput{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Read: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "A"
             },
@@ -1222,8 +1272,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by (volume) (longhorn_volume_write_throughput{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Write: {{volume}}",
+              "expr": "sum by (pvc_namespace, pvc) (longhorn_volume_write_throughput{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Write: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "B"
             }
@@ -1284,8 +1334,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by (volume) (longhorn_volume_read_iops{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Read: {{volume}}",
+              "expr": "sum by (pvc_namespace, pvc) (longhorn_volume_read_iops{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Read: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "A"
             },
@@ -1295,8 +1345,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by (volume) (longhorn_volume_write_iops{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Write: {{volume}}",
+              "expr": "sum by (pvc_namespace, pvc) (longhorn_volume_write_iops{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Write: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "B"
             }
@@ -1357,8 +1407,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "avg by (volume) (longhorn_volume_read_latency{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Read: {{volume}}",
+              "expr": "avg by (pvc_namespace, pvc) (longhorn_volume_read_latency{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Read: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "A"
             },
@@ -1368,8 +1418,8 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "avg by (volume) (longhorn_volume_write_latency{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
-              "legendFormat": "Write: {{volume}}",
+              "expr": "avg by (pvc_namespace, pvc) (longhorn_volume_write_latency{pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "legendFormat": "Write: {{pvc_namespace}}/{{pvc}}",
               "range": true,
               "refId": "B"
             }
@@ -1806,7 +1856,7 @@ data:
                 "properties": [
                   {
                     "id": "unit",
-                    "value": "s"
+                    "value": "dtdurations"
                   },
                   {
                     "id": "thresholds",
@@ -1831,8 +1881,24 @@ data:
                   {
                     "id": "custom.cellOptions",
                     "value": {
+                      "mode": "basic",
                       "type": "color-background"
                     }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "options": {
+                          "-1": {
+                            "color": "semi-dark-red",
+                            "index": 0,
+                            "text": "Never"
+                          }
+                        },
+                        "type": "value"
+                      }
+                    ]
                   }
                 ]
               },
@@ -1861,6 +1927,10 @@ data:
             "cellHeight": "sm",
             "footer": {
               "countRows": true,
+              "fields": "",
+              "reducer": [
+                "count"
+              ],
               "show": true
             },
             "showHeader": true,
@@ -1878,7 +1948,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "max by (pvc_namespace, pvc, volume) (time() - longhorn_volume_last_backup_at{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "expr": "max by (pvc_namespace, pvc, volume) ((time() - (longhorn_volume_last_backup_at{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"} > 0)) or ((0 * longhorn_volume_last_backup_at{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"}) - 1))",
               "format": "table",
               "instant": true,
               "refId": "age"
@@ -1889,7 +1959,7 @@ data:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum by (pvc_namespace, pvc, volume) ((longhorn_backup_actual_size_bytes * on(volume) group_left(pvc, pvc_namespace) (max by(volume, pvc, pvc_namespace)(longhorn_volume_capacity_bytes) > bool 0)) and on(volume) longhorn_volume_last_backup_at{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})",
+              "expr": "(sum by (pvc_namespace, pvc, volume) ((longhorn_backup_actual_size_bytes * on(volume) group_left(pvc, pvc_namespace) (max by(volume, pvc, pvc_namespace)(longhorn_volume_capacity_bytes) > bool 0)) and on(volume) longhorn_volume_last_backup_at{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"})) or (0 * avg by (pvc_namespace, pvc, volume) (longhorn_volume_capacity_bytes{pvc!=\"\",pvc_namespace=~\"$namespace\",pvc=~\"$pvc\",volume=~\"$pv_name\"}))",
               "format": "table",
               "instant": true,
               "refId": "size"
@@ -1926,7 +1996,8 @@ data:
               }
             }
           ],
-          "type": "table"
+          "type": "table",
+          "pluginVersion": "11.4.0"
         },
         {
           "datasource": {
@@ -1982,6 +2053,7 @@ data:
                   {
                     "id": "custom.cellOptions",
                     "value": {
+                      "mode": "basic",
                       "type": "color-background"
                     }
                   }
@@ -2012,6 +2084,10 @@ data:
             "cellHeight": "sm",
             "footer": {
               "countRows": true,
+              "fields": "",
+              "reducer": [
+                "count"
+              ],
               "show": true
             },
             "showHeader": true,
@@ -2087,7 +2163,8 @@ data:
               }
             }
           ],
-          "type": "table"
+          "type": "table",
+          "pluginVersion": "11.4.0"
         },
         {
           "collapsed": false,
@@ -2506,10 +2583,21 @@ data:
                     "uid": "${datasource}"
                   },
                   "editorMode": "code",
+                  "expr": "sum(longhorn_engine_replica_mode{mode=\"WO\"} == 1) or vector(0)",
+                  "legendFormat": "Active Rebuilding Replicas",
+                  "range": true,
+                  "refId": "A"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "${datasource}"
+                  },
+                  "editorMode": "code",
                   "expr": "count by (volume) (longhorn_engine_replica_mode{mode=\"WO\"} == 1)",
                   "legendFormat": "Rebuilding: {{volume}}",
                   "range": true,
-                  "refId": "A"
+                  "refId": "B"
                 }
               ],
               "title": "Rebuilding Replicas (WO Mode)",
