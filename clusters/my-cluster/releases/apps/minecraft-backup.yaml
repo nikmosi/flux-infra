@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/name: minecraft-backup
 rules:
   - apiGroups: ["longhorn.io"]
-    resources: ["snapshots"]
+    resources: ["snapshots", "backups"]
     verbs: ["create", "get", "list", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -132,7 +132,8 @@ spec:
                   POD="minecraft-0"
                   NAMESPACE="apps"
                   LONGHORN_NS="longhorn-system"
-                  RETAIN_COUNT=6
+                  RETAIN_SNAPSHOTS=6
+                  RETAIN_BACKUPS=42
 
                   echo "==> 1. Checking if Minecraft server pod is Running..."
                   PHASE=$$(kubectl get pod "$${POD}" -n "$${NAMESPACE}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
@@ -174,18 +175,38 @@ spec:
                   kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-on
                   trap - EXIT
 
-                  echo "==> 6. Pruning old snapshots (retaining last $${RETAIN_COUNT})...."
+                  echo "==> 6. Triggering S3 Backup for snapshot '$${SNAP_NAME}'..."
+                  curl -fsS -X POST "http://longhorn-backend.$${LONGHORN_NS}:9500/v1/volumes/$${VOL}?action=snapshotBackup" \
+                    -H 'Content-Type: application/json' \
+                    -d "{\"name\":\"$${SNAP_NAME}\"}" > /dev/null
+                  echo "S3 Backup creation requested successfully."
+
+                  echo "==> 7. Pruning old local snapshots (retaining last $${RETAIN_SNAPSHOTS})..."
                   SNAPS=$$(kubectl get snapshots.longhorn.io -n "$${LONGHORN_NS}" -l app=minecraft-backup --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
                   COUNT=$$(echo "$${SNAPS}" | wc -w)
-                  if [ "$${COUNT}" -gt "$${RETAIN_COUNT}" ]; then
-                    TO_DELETE=$$((COUNT - RETAIN_COUNT))
-                    echo "Total snapshots: $${COUNT}. Deleting oldest $${TO_DELETE}..."
+                  if [ "$${COUNT}" -gt "$${RETAIN_SNAPSHOTS}" ]; then
+                    TO_DELETE=$$((COUNT - RETAIN_SNAPSHOTS))
+                    echo "Total local snapshots: $${COUNT}. Deleting oldest $${TO_DELETE}..."
                     for s in $$(echo "$${SNAPS}" | tr ' ' '\n' | head -n "$${TO_DELETE}"); do
                       echo "  Deleting old snapshot: $${s}"
                       kubectl delete snapshot.longhorn.io -n "$${LONGHORN_NS}" "$${s}" --wait=false || true
                     done
                   else
-                    echo "Snapshots count ($${COUNT}) is within retention limit ($${RETAIN_COUNT})."
+                    echo "Local snapshots count ($${COUNT}) is within retention limit ($${RETAIN_SNAPSHOTS})."
                   fi
 
-                  echo "==> [OK] Minecraft backup and Longhorn snapshot workflow completed successfully!"
+                  echo "==> 8. Pruning old S3 backups (retaining last $${RETAIN_BACKUPS})..."
+                  BACKUPS=$$(kubectl get backups.longhorn.io -n "$${LONGHORN_NS}" -l "backup-volume=$${VOL}" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
+                  B_COUNT=$$(echo "$${BACKUPS}" | wc -w)
+                  if [ "$${B_COUNT}" -gt "$${RETAIN_BACKUPS}" ]; then
+                    B_TO_DELETE=$$((B_COUNT - RETAIN_BACKUPS))
+                    echo "Total S3 backups: $${B_COUNT}. Deleting oldest $${B_TO_DELETE}..."
+                    for b in $$(echo "$${BACKUPS}" | tr ' ' '\n' | head -n "$${B_TO_DELETE}"); do
+                      echo "  Deleting old S3 backup: $${b}"
+                      kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${b}" --wait=false || true
+                    done
+                  else
+                    echo "S3 backups count ($${B_COUNT}) is within retention limit ($${RETAIN_BACKUPS})."
+                  fi
+
+                  echo "==> [OK] Minecraft backup, Longhorn snapshot, and S3 backup workflow completed successfully!"
