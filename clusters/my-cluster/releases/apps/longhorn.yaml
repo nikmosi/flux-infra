@@ -56,8 +56,6 @@ spec:
     - match: Host(`longhorn.xinfra.ru`)
       kind: Rule
       middlewares:
-        - name: forwardauth-authelia
-          namespace: security
         - name: longhorn-buffering
           namespace: longhorn-system
       services:

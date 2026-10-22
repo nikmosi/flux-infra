@@ -36,11 +36,11 @@ spec:
         pullPolicy: Always
       resources:
         requests:
-          cpu: 50m
-          memory: 128Mi
+          cpu: 100m
+          memory: 256Mi
         limits:
-          cpu: 1000m
-          memory: 512Mi
+          cpu: 2500m
+          memory: 1024Mi
     image:
       pullPolicy: Always
     extraEnv:
