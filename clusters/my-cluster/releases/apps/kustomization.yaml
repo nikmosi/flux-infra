@@ -32,6 +32,7 @@ resources:
 - minecraft.yaml
 - ntfy.yaml
 - pgadmin.yaml
+- qinping-air-monitor.yaml
 - prometheus-remote-write-auth.yaml
 - pvcs.yaml
 - renovate.yaml

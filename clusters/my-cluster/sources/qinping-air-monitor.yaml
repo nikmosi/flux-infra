@@ -1,0 +1,36 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: qinping-air-monitor
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  url: http://forgejo-http.developer-tools.svc.cluster.local:3000/nikmosi/qinping-air-monitor.git
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: qinping-air-monitor
+  namespace: flux-system
+spec:
+  image: zot.xinfra.ru/qinping-air-monitor
+  interval: 2m
+  secretRef:
+    name: zot-reader
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: qinping-air-monitor
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: qinping-air-monitor
+  filterTags:
+    pattern: "^v(?P<semver>.*)"
+  policy:
+    semver:
+      range: ">=0.1.0 <1.0.0"
