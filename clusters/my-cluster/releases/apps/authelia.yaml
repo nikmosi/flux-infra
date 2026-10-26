@@ -319,7 +319,7 @@ spec:
               - prometheus.xinfra.ru
             resources:
               - '^/api/v1/write([/?].*)?$'
-            policy: one_factor
+            policy: bypass
           - domain:
               - loki.xinfra.ru
             resources:

@@ -371,7 +371,7 @@ spec:
         ingressClassName: traefik
         annotations:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.middlewares: security-forwardauth-authelia@kubernetescrd
+          traefik.ingress.kubernetes.io/router.middlewares: monitoring-prometheus-remote-write-basic-auth@kubernetescrd
         hosts:
           - prometheus.xinfra.ru
         paths:
