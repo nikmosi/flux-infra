@@ -1,0 +1,152 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: qingping-alert-rules
+  namespace: monitoring
+  labels:
+    role: alert-rules
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+spec:
+  groups:
+    - name: qingping-air-quality.rules
+      rules:
+        - alert: QingpingHighCO2
+          expr: qingping_co2_ppm > 1000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Elevated CO₂ level on {{ $labels.device_name }} ({{ $value | printf \"%.0f\" }} ppm)"
+            description: "CO₂ concentration on {{ $labels.device_name }} is {{ $value | printf \"%.0f\" }} ppm (exceeds 1000 ppm threshold for 5m). Room ventilation recommended."
+
+        - alert: QingpingCriticallyHighCO2
+          expr: qingping_co2_ppm > 1400
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Critically high CO₂ level on {{ $labels.device_name }} ({{ $value | printf \"%.0f\" }} ppm)"
+            description: "CO₂ concentration on {{ $labels.device_name }} is {{ $value | printf \"%.0f\" }} ppm (exceeds 1400 ppm threshold for 3m). Fresh air / ventilation urgently required."
+
+        - alert: QingpingHighPM25
+          expr: qingping_pm25_ug_m3 > 35
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Elevated PM2.5 level on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} µg/m³)"
+            description: "PM2.5 particulate concentration on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} µg/m³ (exceeds 35 µg/m³ threshold for 5m)."
+
+        - alert: QingpingCriticalPM25
+          expr: qingping_pm25_ug_m3 > 55
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Hazardous PM2.5 level on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} µg/m³)"
+            description: "PM2.5 particulate concentration on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} µg/m³ (exceeds 55 µg/m³ threshold for 3m)."
+
+        - alert: QingpingHighPM10
+          expr: qingping_pm10_ug_m3 > 50
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Elevated PM10 level on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} µg/m³)"
+            description: "PM10 particulate concentration on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} µg/m³ (exceeds 50 µg/m³ threshold for 5m)."
+
+    - name: qingping-comfort.rules
+      rules:
+        - alert: QingpingHighTemperature
+          expr: qingping_temperature_celsius > 28
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High room temperature on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} °C)"
+            description: "Temperature on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} °C (exceeds 28 °C threshold for 15m)."
+
+        - alert: QingpingLowTemperature
+          expr: qingping_temperature_celsius < 17
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low room temperature on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} °C)"
+            description: "Temperature on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} °C (below 17 °C threshold for 15m)."
+
+        - alert: QingpingLowHumidity
+          expr: qingping_humidity_percent < 25
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low indoor humidity on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} %)"
+            description: "Relative humidity on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} % (below 25% threshold for 30m). Air is dry, humidifier recommended."
+
+        - alert: QingpingHighHumidity
+          expr: qingping_humidity_percent > 70
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High indoor humidity on {{ $labels.device_name }} ({{ $value | printf \"%.1f\" }} %)"
+            description: "Relative humidity on {{ $labels.device_name }} is {{ $value | printf \"%.1f\" }} % (exceeds 70% threshold for 15m). Risk of dampness or mold."
+
+    - name: qingping-device.rules
+      rules:
+        - alert: QingpingBatteryLow
+          expr: qingping_battery_percent < 20
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low battery on {{ $labels.device_name }} ({{ $value | printf \"%.0f\" }} %)"
+            description: "Battery level on {{ $labels.device_name }} is {{ $value | printf \"%.0f\" }}%. Please connect the charging cable."
+
+        - alert: QingpingBatteryCritical
+          expr: qingping_battery_percent < 10
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Critically low battery on {{ $labels.device_name }} ({{ $value | printf \"%.0f\" }} %)"
+            description: "Battery level on {{ $labels.device_name }} is {{ $value | printf \"%.0f\" }}%. Device will shut down soon without power."
+
+        - alert: QingpingDeviceOffline
+          expr: qingping_device_online == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Qingping device {{ $labels.device_name }} is offline"
+            description: "Device {{ $labels.device_name }} (MAC: {{ $labels.mac }}) is reported offline by Qingping Cloud for 15 minutes."
+
+        - alert: QingpingDataStale
+          expr: (time() - qingping_device_last_report_timestamp_seconds) > 3600
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Stale telemetry from {{ $labels.device_name }}"
+            description: "Device {{ $labels.device_name }} has not updated its sensor readings for more than 1 hour."
+
+        - alert: QingpingScrapeFailed
+          expr: qingping_exporter_scrape_success == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Qingping Cloud API scrape failed"
+            description: "Exporter failed to scrape data from Qingping Cloud OpenAPI for 5 minutes. Check API credentials or network connectivity."
+
+        - alert: QingpingExporterDown
+          expr: up{job="qinping-air-monitor"} == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Qingping Air Monitor exporter pod is down"
+            description: "Prometheus cannot scrape the qinping-air-monitor exporter pod for 3 minutes."
