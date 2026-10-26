@@ -13,13 +13,13 @@ spec:
     - name: vps.rules
       rules:
         - alert: VpsNodeDown
-          expr: up{job="prometheus.scrape.node_exporter"} == 0
-          for: 2m
+          expr: up{job="prometheus.scrape.node_exporter"} == 0 or (time() - max by (instance) (max_over_time(timestamp(node_uname_info{job="prometheus.scrape.node_exporter"})[1h:30s])) > 120)
+          for: 1m
           labels:
             severity: critical
           annotations:
             summary: "VPS instance {{ $labels.instance }} is unreachable / down"
-            description: "Node {{ $labels.instance }} has been unreachable for more than 2 minutes."
+            description: "Node {{ $labels.instance }} is reported down or has stopped sending metrics for more than 2 minutes."
 
         - alert: VpsXuiServiceDown
           expr: node_systemd_unit_state{job="prometheus.scrape.node_exporter", name="x-ui.service", state="active"} == 0
@@ -31,16 +31,25 @@ spec:
             description: "Systemd unit x-ui.service on {{ $labels.instance }} is not active. VPN is unavailable."
 
         - alert: VpsDockerServiceDown
-          expr: node_systemd_unit_state{job="prometheus.scrape.node_exporter", name="docker.service", state="failed"} == 1
+          expr: node_systemd_unit_state{job="prometheus.scrape.node_exporter", name="docker.service", state="active"} == 0
           for: 1m
           labels:
             severity: warning
           annotations:
-            summary: "Docker service on {{ $labels.instance }} has failed"
-            description: "Systemd unit docker.service on {{ $labels.instance }} entered failed state."
+            summary: "Docker service on {{ $labels.instance }} is not active"
+            description: "Systemd unit docker.service on {{ $labels.instance }} is not in active state."
+
+        - alert: VpsCadvisorDown
+          expr: time() - max by (instance) (max_over_time(timestamp(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"vpn-.*"})[1h:30s])) > 120
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "cAdvisor container metrics missing on {{ $labels.instance }}"
+            description: "No container metrics received from cAdvisor on {{ $labels.instance }} for more than 2 minutes."
 
         - alert: VpsDiskSpaceWarning
-          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"}) * 100 < 15
           for: 5m
           labels:
             severity: warning
@@ -49,7 +58,7 @@ spec:
             description: "Disk space available on / for {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}%."
 
         - alert: VpsDiskSpaceCritical
-          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+          expr: (node_filesystem_avail_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"} / node_filesystem_size_bytes{job="prometheus.scrape.node_exporter", mountpoint="/"}) * 100 < 5
           for: 5m
           labels:
             severity: critical
@@ -67,7 +76,7 @@ spec:
             description: "CPU usage on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% for over 10 minutes."
 
         - alert: VpsHighMemoryUsage
-          expr: ((node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter"} - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 90
+          expr: ((node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter"} - node_memory_MemAvailable_bytes{job="prometheus.scrape.node_exporter"}) / node_memory_MemTotal_bytes{job="prometheus.scrape.node_exporter"}) * 100 > 90
           for: 5m
           labels:
             severity: warning
@@ -76,7 +85,7 @@ spec:
             description: "Memory usage on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% for over 5 minutes."
 
         - alert: VpsConntrackTableAlmostFull
-          expr: (node_nf_conntrack_entries{job="prometheus.scrape.node_exporter"} / node_nf_conntrack_entries_limit) * 100 > 85
+          expr: (node_nf_conntrack_entries{job="prometheus.scrape.node_exporter"} / node_nf_conntrack_entries_limit{job="prometheus.scrape.node_exporter"}) * 100 > 85
           for: 5m
           labels:
             severity: critical
@@ -85,7 +94,7 @@ spec:
             description: "Connection tracking table on {{ $labels.instance }} is at {{ $value | printf \"%.1f\" }}% capacity. Risk of dropping VPN connections."
 
         - alert: VpsNetworkPacketDrops
-          expr: (rate(node_network_receive_drop_total{job="prometheus.scrape.node_exporter", device=~"eth.*|ens.*"}[5m]) + rate(node_network_transmit_drop_total[5m])) > 50
+          expr: (rate(node_network_receive_drop_total{job="prometheus.scrape.node_exporter", device=~"eth.*|ens.*"}[5m]) + rate(node_network_transmit_drop_total{job="prometheus.scrape.node_exporter", device=~"eth.*|ens.*"}[5m])) > 50
           for: 5m
           labels:
             severity: warning

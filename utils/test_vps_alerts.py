@@ -49,6 +49,7 @@ def test_alerts_manifest():
         "VpsNodeDown",
         "VpsXuiServiceDown",
         "VpsDockerServiceDown",
+        "VpsCadvisorDown",
         "VpsDiskSpaceWarning",
         "VpsDiskSpaceCritical",
         "VpsHighCpuUsage",
