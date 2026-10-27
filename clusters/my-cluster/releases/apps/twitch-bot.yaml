@@ -41,5 +41,13 @@ spec:
       existingSecret: "twitch-bot-creds"
     image:
       tag: "v0.4.3" # {"$imagepolicy": "flux-system:twitch-sub-bot:tag"}
+    rabbitmq:
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: null
+          memory: 512Mi
     env:
       LIMITER_MAX_RATE: 100
