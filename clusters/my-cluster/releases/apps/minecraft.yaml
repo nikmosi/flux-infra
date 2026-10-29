@@ -98,10 +98,10 @@ spec:
           resources:
             requests:
               cpu: 2000m
-              memory: 8Gi
+              memory: 12Gi
             limits:
               cpu: 6000m
-              memory: 12Gi
+              memory: 16Gi
           startupProbe:
             exec:
               command:
