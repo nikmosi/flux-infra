@@ -34,7 +34,7 @@ spec:
     fullnameOverride: renovate-operator
 
     crd:
-      install: false
+      install: true
 
     authorization:
       defaults:
