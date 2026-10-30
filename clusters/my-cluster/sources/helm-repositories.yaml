@@ -76,10 +76,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  type: oci
-  url: oci://zot.xinfra.ru/charts
-  secretRef:
-    name: zot-reader
+  url: https://charts.longhorn.io
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -100,18 +97,6 @@ spec:
   interval: 1h
   type: oci
   url: oci://ghcr.io/project-zot/helm-charts
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: rm3l
-  namespace: flux-system
-spec:
-  interval: 1h
-  type: oci
-  url: oci://zot.xinfra.ru/charts
-  secretRef:
-    name: zot-reader
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
