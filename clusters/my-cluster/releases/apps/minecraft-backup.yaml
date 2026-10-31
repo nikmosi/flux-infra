@@ -51,7 +51,7 @@ metadata:
 rules:
   - apiGroups: ["longhorn.io"]
     resources: ["snapshots", "backups"]
-    verbs: ["create", "get", "list", "delete"]
+    verbs: ["create", "get", "list", "delete", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -86,6 +86,7 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 3600
       template:
         metadata:
           labels:
@@ -189,31 +190,87 @@ spec:
                     echo "Local snapshots count ($${COUNT}) is within retention limit ($${RETAIN_SNAPSHOTS})."
                   fi
 
-                  echo "==> 7. Cleaning up any previously failed S3 backups..."
-                  FAILED_BACKUPS=$$(kubectl get backups.longhorn.io -n "$${LONGHORN_NS}" -l "backup-volume=$${VOL}" -o jsonpath='{range .items[?(@.status.state=="Error")]}{.metadata.name}{" "}{end}')
-                  for fb in $${FAILED_BACKUPS}; do
-                    echo "  Deleting failed backup CR: $${fb}"
-                    kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${fb}" --wait=true || true
+                  echo "==> 7. Triggering and verifying S3 Backup for snapshot '$${SNAP_NAME}'..."
+                  MAX_ATTEMPTS=5
+                  BACKUP_SUCCESS=false
+
+                  for attempt in $$(seq 1 $${MAX_ATTEMPTS}); do
+                    echo "--- S3 Backup attempt $${attempt}/$${MAX_ATTEMPTS} ---"
+
+                    # Trigger snapshot backup via Longhorn backend API
+                    curl -fsS -X POST "http://longhorn-backend.$${LONGHORN_NS}:9500/v1/volumes/$${VOL}?action=snapshotBackup" \
+                      -H 'Content-Type: application/json' \
+                      -d "{\"name\":\"$${SNAP_NAME}\"}" > /dev/null
+
+                    # Find the newly created Backup CR
+                    BACKUP_NAME=""
+                    for i in $$(seq 1 15); do
+                      BACKUP_NAME=$$(kubectl get backups.longhorn.io -n "$${LONGHORN_NS}" -l "backup-volume=$${VOL}" -o jsonpath="{range .items[?(@.spec.snapshotName==\"$${SNAP_NAME}\")]}{.metadata.name}{end}")
+                      if [ -n "$${BACKUP_NAME}" ]; then
+                        break
+                      fi
+                      sleep 2
+                    done
+
+                    if [ -z "$${BACKUP_NAME}" ]; then
+                      echo "WARNING: Could not find Backup CR for snapshot $${SNAP_NAME} within 30s."
+                      sleep 10
+                      continue
+                    fi
+
+                    echo "Found Backup CR: $${BACKUP_NAME}. Monitoring progress..."
+                    for i in $$(seq 1 120); do
+                      STATE=$$(kubectl get backup.longhorn.io -n "$${LONGHORN_NS}" "$${BACKUP_NAME}" -o jsonpath='{.status.state}' 2>/dev/null || echo "")
+                      PROGRESS=$$(kubectl get backup.longhorn.io -n "$${LONGHORN_NS}" "$${BACKUP_NAME}" -o jsonpath='{.status.progress}' 2>/dev/null || echo "0")
+                      if [ "$${STATE}" = "Completed" ]; then
+                        echo "Backup $${BACKUP_NAME} completed successfully!"
+                        BACKUP_SUCCESS=true
+                        break 2
+                      elif [ "$${STATE}" = "Error" ]; then
+                        ERR_MSG=$$(kubectl get backup.longhorn.io -n "$${LONGHORN_NS}" "$${BACKUP_NAME}" -o jsonpath='{.status.error}' 2>/dev/null || echo "Unknown error")
+                        echo "Backup $${BACKUP_NAME} failed: $${ERR_MSG}"
+                        break
+                      fi
+                      if [ $$((i % 6)) -eq 0 ]; then
+                        echo "  Backup $${BACKUP_NAME} state: '$${STATE}', progress: $${PROGRESS}%..."
+                      fi
+                      sleep 10
+                    done
+
+                    if [ "$${BACKUP_SUCCESS}" = "false" ]; then
+                      echo "Cleaning up failed attempt CR $${BACKUP_NAME}..."
+                      kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${BACKUP_NAME}" --wait=false || true
+                      if [ "$${attempt}" -lt "$${MAX_ATTEMPTS}" ]; then
+                        echo "Waiting 60s for S3 lock to clear before retry $${attempt}/$${MAX_ATTEMPTS}..."
+                        sleep 60
+                      fi
+                    fi
                   done
+
+                  if [ "$${BACKUP_SUCCESS}" != "true" ]; then
+                    echo "ERROR: S3 Backup failed after $${MAX_ATTEMPTS} attempts." >&2
+                    exit 1
+                  fi
 
                   echo "==> 8. Pruning old S3 backups (retaining last $${RETAIN_BACKUPS})..."
                   BACKUPS=$$(kubectl get backups.longhorn.io -n "$${LONGHORN_NS}" -l "backup-volume=$${VOL}" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[*].metadata.name}')
                   B_COUNT=$$(echo "$${BACKUPS}" | wc -w)
-                  if [ "$${B_COUNT}" -ge "$${RETAIN_BACKUPS}" ]; then
-                    B_TO_DELETE=$$((B_COUNT - RETAIN_BACKUPS + 1))
-                    echo "Total S3 backups: $${B_COUNT}. Deleting oldest $${B_TO_DELETE} before starting new backup..."
+                  if [ "$${B_COUNT}" -gt "$${RETAIN_BACKUPS}" ]; then
+                    B_TO_DELETE=$$((B_COUNT - RETAIN_BACKUPS))
+                    echo "Total S3 backups: $${B_COUNT}. Deleting oldest $${B_TO_DELETE}..."
                     for b in $$(echo "$${BACKUPS}" | tr ' ' '\n' | head -n "$${B_TO_DELETE}"); do
                       echo "  Deleting old S3 backup: $${b}"
-                      kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${b}" --wait=true || true
+                      kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${b}" --wait=true --timeout=600s || true
                     done
                   else
                     echo "S3 backups count ($${B_COUNT}) is within retention limit ($${RETAIN_BACKUPS})."
                   fi
 
-                  echo "==> 9. Triggering S3 Backup for snapshot '$${SNAP_NAME}'..."
-                  curl -fsS -X POST "http://longhorn-backend.$${LONGHORN_NS}:9500/v1/volumes/$${VOL}?action=snapshotBackup" \
-                    -H 'Content-Type: application/json' \
-                    -d "{\"name\":\"$${SNAP_NAME}\"}" > /dev/null
-                  echo "S3 Backup creation requested successfully."
+                  echo "==> 9. Cleaning up any lingering failed S3 backup CRs..."
+                  FAILED_BACKUPS=$$(kubectl get backups.longhorn.io -n "$${LONGHORN_NS}" -l "backup-volume=$${VOL}" -o jsonpath='{range .items[?(@.status.state=="Error")]}{.metadata.name}{" "}{end}')
+                  for fb in $${FAILED_BACKUPS}; do
+                    echo "  Deleting failed backup CR: $${fb}"
+                    kubectl delete backup.longhorn.io -n "$${LONGHORN_NS}" "$${fb}" --wait=false || true
+                  done
 
                   echo "==> [OK] Minecraft backup, Longhorn snapshot, and S3 backup workflow completed successfully!"
