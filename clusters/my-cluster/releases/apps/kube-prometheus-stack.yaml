@@ -431,7 +431,7 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 24Gi
+                  storage: 48Gi
 
     thanosRuler:
       enabled: false
