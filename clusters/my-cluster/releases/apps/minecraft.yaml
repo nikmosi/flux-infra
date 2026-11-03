@@ -95,6 +95,8 @@ spec:
               value: "TRUE"
             - name: ENFORCE_WHITELIST
               value: "TRUE"
+            - name: SIMULATION_DISTANCE
+              value: "5"
           resources:
             requests:
               cpu: 2000m
