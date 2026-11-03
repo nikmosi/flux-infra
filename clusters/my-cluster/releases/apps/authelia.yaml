@@ -112,7 +112,7 @@ spec:
       enabled: true
       storageClass: longhorn
       existingClaim: authelia
-      size: 1Gi
+      size: 4Gi
       accessModes:
         - ReadWriteOnce
 
@@ -318,13 +318,13 @@ spec:
           - domain:
               - prometheus.xinfra.ru
             resources:
-              - '^/api/v1/write([/?].*)?$'
+              - "^/api/v1/write([/?].*)?$"
             policy: bypass
           - domain:
               - loki.xinfra.ru
             resources:
-              - '^/(loki/)?api/v1/push([/?].*)?$'
-              - '^/ready$'
+              - "^/(loki/)?api/v1/push([/?].*)?$"
+              - "^/ready$"
             policy: one_factor
           - domain:
               - "*.xinfra.ru"
