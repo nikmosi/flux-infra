@@ -155,6 +155,26 @@ SERVER_UTILITIES: list[UtilityMod] = [
             "https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar",
         ],
     ),
+    UtilityMod(
+        name="ServerCore Forge",
+        purpose="Server optimization & entity/item merging tweaks",
+        default_filename="servercore-forge-1.5.2+1.20.1.jar",
+        filename_pattern=r"^servercore-forge-.*\.jar$",
+        urls=[
+            # Official Modrinth build for Forge 1.20.1
+            "https://cdn.modrinth.com/data/4WWQxlQP/versions/rx1c7m6q/servercore-forge-1.5.2%2B1.20.1.jar",
+        ],
+    ),
+    UtilityMod(
+        name="Simple Voice Chat Forge",
+        purpose="Proximity voice chat server (/voicechat)",
+        default_filename="voicechat-forge-1.20.1-2.6.27.jar",
+        filename_pattern=r"^voicechat-forge-.*\.jar$",
+        urls=[
+            # Official Modrinth build for Forge 1.20.1
+            "https://cdn.modrinth.com/data/9eGKb6K1/versions/IZvGk7Np/voicechat-forge-1.20.1-2.6.27.jar",
+        ],
+    ),
 ]
 
 # Client-only mods present in archive that lack packwiz index entries

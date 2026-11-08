@@ -66,6 +66,9 @@ spec:
             - name: mc-metrics
               containerPort: 19565
               protocol: TCP
+            - name: voicechat
+              containerPort: 24454
+              protocol: UDP
           env:
             - name: EULA
               value: "TRUE"
@@ -97,6 +100,9 @@ spec:
               value: "TRUE"
             - name: SIMULATION_DISTANCE
               value: "5"
+            - name: RCON_CMDS_STARTUP
+              value: |-
+                gamerule playersSleepingPercentage 33
           resources:
             requests:
               cpu: 2000m
@@ -199,6 +205,10 @@ spec:
       port: 25565
       targetPort: 25565
       protocol: TCP
+    - name: voicechat
+      port: 24454
+      targetPort: 24454
+      protocol: UDP
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
