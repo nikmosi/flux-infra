@@ -39,6 +39,8 @@ spec:
       defaultClassReplicaCount: 3
     defaultSettings:
       defaultReplicaCount: 3
+      removeSnapshotsDuringFilesystemTrim: "true"
+      autoCleanupSystemGeneratedSnapshot: "true"
     defaultBackupStore:
       backupTarget: s3://a353ae34-e55f-4d81-b4fd-902fffed4427@ru-1/
       backupTargetCredentialSecret: longhorn-backup-secret
@@ -79,3 +81,32 @@ spec:
   backupTargetURL: s3://a353ae34-e55f-4d81-b4fd-902fffed4427@ru-1/
   credentialSecret: longhorn-backup-secret
   pollInterval: 5m0s
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: filesystem-trim
+  namespace: longhorn-system
+spec:
+  name: filesystem-trim
+  task: filesystem-trim
+  cron: "0 2 * * *"
+  retain: 0
+  concurrency: 1
+  groups:
+    - default
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: snapshot-cleanup
+  namespace: longhorn-system
+spec:
+  name: snapshot-cleanup
+  task: snapshot-cleanup
+  cron: "0 3 * * *"
+  retain: 0
+  concurrency: 1
+  groups:
+    - default
+
