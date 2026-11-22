@@ -78,8 +78,6 @@ spec:
               - severity = info
             equal:
               - namespace
-          - target_matchers:
-              - alertname = InfoInhibitor
         route:
           group_by:
             - namespace
@@ -460,6 +458,8 @@ spec:
             GRAFANA_ORG_ID = os.environ.get("GRAFANA_ORG_ID", "1")
             GRAFANA_RANGE_FROM = os.environ.get("GRAFANA_RANGE_FROM", "now-1h")
             GRAFANA_RANGE_TO = os.environ.get("GRAFANA_RANGE_TO", "now")
+            MAX_BATCH_ALERTS = 6
+            MAX_MESSAGE_BYTES = 3800
 
 
             def read_token():
@@ -468,11 +468,13 @@ spec:
 
 
             def label(alert, name, default=""):
-                return alert.get("labels", {}).get(name, default)
+                labels = alert.get("labels") or {}
+                return labels.get(name, default) if isinstance(labels, dict) else default
 
 
             def annotation(alert, name, default=""):
-                return alert.get("annotations", {}).get(name, default)
+                annotations = alert.get("annotations") or {}
+                return annotations.get(name, default) if isinstance(annotations, dict) else default
 
 
             def alert_name(alert):
@@ -518,7 +520,7 @@ spec:
 
             def message(alerts):
                 parts = []
-                for alert in alerts:
+                for alert in alerts[:MAX_BATCH_ALERTS]:
                     lines = []
                     summary = annotation(alert, "summary")
                     description = annotation(alert, "description")
@@ -539,7 +541,16 @@ spec:
                     if runbook:
                         lines.append(f"Runbook: {runbook}")
                     parts.append("\n".join(lines) or alert_name(alert))
-                return "\n\n---\n\n".join(parts)
+                result = "\n\n---\n\n".join(parts)
+                if len(alerts) > MAX_BATCH_ALERTS:
+                    result += f"\n\n---\n\n*... and {len(alerts) - MAX_BATCH_ALERTS} more alerts truncated.*"
+                raw_bytes = result.encode("utf-8")
+                if len(raw_bytes) > MAX_MESSAGE_BYTES:
+                    suffix = "\n\n*(truncated)*"
+                    suffix_bytes = suffix.encode("utf-8")
+                    allowed_bytes = MAX_MESSAGE_BYTES - len(suffix_bytes)
+                    result = raw_bytes[:allowed_bytes].decode("utf-8", errors="ignore") + suffix
+                return result
 
 
             def prometheus_expr(generator_url):
@@ -629,11 +640,18 @@ spec:
                         self.end_headers()
                         return
 
-                    length = int(self.headers.get("Content-Length", "0"))
                     try:
+                        length = int(self.headers.get("Content-Length", "0"))
                         payload = json.loads(self.rfile.read(length))
+                    except (ValueError, json.JSONDecodeError) as error:
+                        self.send_response(400)
+                        self.end_headers()
+                        self.wfile.write(str(error).encode("utf-8"))
+                        return
+
+                    try:
                         publish(payload)
-                    except (json.JSONDecodeError, urllib.error.URLError, OSError) as error:
+                    except (urllib.error.URLError, OSError) as error:
                         self.send_response(502)
                         self.end_headers()
                         self.wfile.write(str(error).encode("utf-8"))

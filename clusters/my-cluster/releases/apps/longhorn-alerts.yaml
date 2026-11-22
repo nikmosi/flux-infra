@@ -67,7 +67,7 @@ spec:
             description: "Used storage on Longhorn node {{ $labels.node }} is at {{ $value | printf \"%.1f\" }}%."
 
         - alert: LonghornVolumeDegraded
-          expr: longhorn_volume_robustness == 2
+          expr: longhorn_volume_robustness{state="degraded"} == 1
           for: 5m
           labels:
             severity: warning
@@ -76,7 +76,7 @@ spec:
             description: "Longhorn volume {{ $labels.volume }} (PVC: {{ $labels.pvc_namespace }}/{{ $labels.pvc }}) has degraded robustness (replica failed, rebuilding, or insufficient replicas)."
 
         - alert: LonghornVolumeFault
-          expr: longhorn_volume_robustness == 3
+          expr: longhorn_volume_robustness{state="faulted"} == 1
           for: 2m
           labels:
             severity: critical
@@ -100,7 +100,7 @@ spec:
             severity: critical
           annotations:
             summary: "Longhorn backup failed for volume {{ $labels.volume }}"
-            description: "Backup {{ $labels.backup }} for volume {{ $labels.volume }} (recurring job: {{ $labels.recurring_job }}) failed."
+            description: "Backup {{ $labels.backup }} for volume {{ $labels.volume }} failed."
 
         - alert: LonghornBackupStale
           expr: (time() - longhorn_volume_last_backup_at{pvc!=""} > 100800) and (longhorn_volume_last_backup_at{pvc!=""} > 0)

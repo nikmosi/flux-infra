@@ -39,3 +39,6 @@ spec:
     image:
       pullPolicy: Always
     ingress: {}
+    ntfy:
+      config:
+        message-size-limit: 16k
