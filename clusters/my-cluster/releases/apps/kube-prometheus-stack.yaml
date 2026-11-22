@@ -79,6 +79,12 @@ spec:
               - severity = info
             equal:
               - namespace
+          - source_matchers:
+              - alertname =~ QingpingDataStale|QingpingDeviceOffline
+            target_matchers:
+              - alertname =~ QingpingHigh.*|QingpingLow.*
+            equal:
+              - device_name
         route:
           group_by:
             - namespace
@@ -616,6 +622,16 @@ spec:
                 if click_url:
                     body["click"] = click_url
 
+                actions = []
+                if click_url:
+                    actions.append({"action": "view", "label": "Explore", "url": click_url})
+                if alerts:
+                    runbook = annotation(alerts[0], "runbook_url")
+                    if runbook and runbook != click_url:
+                        actions.append({"action": "view", "label": "Runbook", "url": runbook})
+                actions.append({"action": "view", "label": "Alerts List", "url": f"{GRAFANA_URL}/alerting/list"})
+                body["actions"] = actions
+
                 request = urllib.request.Request(
                     NTFY_URL,
                     data=json.dumps(body).encode("utf-8"),
@@ -667,6 +683,8 @@ spec:
                     self.end_headers()
 
                 def log_message(self, fmt, *args):
+                    if len(args) > 0 and isinstance(args[0], str) and "/healthz" in args[0]:
+                        return
                     print("%s - %s" % (self.address_string(), fmt % args), flush=True)
 
 
