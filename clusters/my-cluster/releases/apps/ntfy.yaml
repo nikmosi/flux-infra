@@ -42,3 +42,4 @@ spec:
     ntfy:
       config:
         message-size-limit: 16k
+        behind-proxy: true

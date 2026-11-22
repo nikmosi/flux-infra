@@ -45,6 +45,7 @@ spec:
       rules:
         etcd: false
         kubeControllerManager: false
+        kubeMemoryOvercommit: false
         kubeProxy: false
         kubeSchedulerAlerting: false
         kubeSchedulerRecording: false
@@ -93,6 +94,10 @@ spec:
             - matchers:
                 - alertname = "InfoInhibitor"
               receiver: "null"
+            - matchers:
+                - severity = "critical"
+              repeat_interval: 2h
+              receiver: ntfy
         receivers:
           - name: "null"
           - name: ntfy
@@ -506,7 +511,7 @@ spec:
             def tags(status, alerts):
                 severities = sorted({label(alert, "severity") for alert in alerts if label(alert, "severity")})
                 base = ["white_check_mark"] if status == "resolved" else ["rotating_light"]
-                return ["prometheus", "alertmanager"] + severities + base
+                return base + ["prometheus", "alertmanager"] + severities
 
 
             def title(status, alerts):
@@ -603,6 +608,7 @@ spec:
                     "topic": NTFY_TOPIC,
                     "title": title(payload.get("status", "firing"), alerts),
                     "message": message(alerts),
+                    "markdown": True,
                     "priority": priority(payload.get("status", "firing"), alerts),
                     "tags": tags(payload.get("status", "firing"), alerts),
                 }
