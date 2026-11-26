@@ -22,7 +22,7 @@ metadata:
   labels:
     app.kubernetes.io/name: minecraft
   annotations:
-    kube-score/ignore: "pod-networkpolicy,container-security-context-readonlyrootfilesystem,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,statefulset-has-servicename,pod-probes-identical"
+    kube-score/ignore: "pod-networkpolicy,container-security-context-readonlyrootfilesystem,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,statefulset-has-servicename,pod-probes-identical,container-image-pull-policy"
 spec:
   serviceName: minecraft
   replicas: 1
@@ -34,7 +34,7 @@ spec:
       labels:
         app.kubernetes.io/name: minecraft
       annotations:
-        kube-score/ignore: "pod-networkpolicy,container-security-context-readonlyrootfilesystem,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,statefulset-has-servicename,pod-probes-identical"
+        kube-score/ignore: "pod-networkpolicy,container-security-context-readonlyrootfilesystem,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,statefulset-has-servicename,pod-probes-identical,container-image-pull-policy"
     spec:
       terminationGracePeriodSeconds: 180
       nodeSelector:
@@ -49,8 +49,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: minecraft
-          image: itzg/minecraft-server:java17
-          imagePullPolicy: Always
+          image: itzg/minecraft-server:java17@sha256:6eeaf2dc61addb28a6a6568e9c4144dfb977297fcae398cde230802c2da64cd3
+          imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -81,8 +81,8 @@ spec:
               value: "47.4.0"
             - name: MEMORY
               value: "10G"
-            - name: JVM_XX_OPTS
-              value: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC"
+            - name: USE_AIKAR_FLAGS
+              value: "TRUE"
             - name: MOTD
               value: "All the Mods 9 - No Frills"
             - name: ALLOW_FLIGHT
@@ -101,6 +101,10 @@ spec:
               value: "TRUE"
             - name: SIMULATION_DISTANCE
               value: "5"
+            - name: VIEW_DISTANCE
+              value: "10"
+            - name: SYNC_CHUNK_WRITES
+              value: "false"
             - name: RCON_CMDS_STARTUP
               value: |-
                 gamerule playersSleepingPercentage 33
@@ -139,8 +143,8 @@ spec:
             - name: data
               mountPath: /data
         - name: mc-monitor
-          image: itzg/mc-monitor:latest
-          imagePullPolicy: Always
+          image: itzg/mc-monitor:latest@sha256:f5e15a04fb29ee6befd768fcdf9009e9c642197430edfed371415276e9ee1c1f
+          imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
