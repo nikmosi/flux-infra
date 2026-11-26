@@ -69,6 +69,24 @@ def test_alerts_manifest():
         assert r["labels"]["severity"] in ("warning", "critical"), f"Invalid severity in rule {name}"
         assert "annotations" in r and "summary" in r["annotations"], f"Rule {name} missing annotations.summary"
 
+    rules_by_name = {r.get("alert"): r for r in rules}
+    cadvisor_expr = rules_by_name["VpsCadvisorDown"]["expr"]
+    assert 'id="/"' in cadvisor_expr, (
+        f'VpsCadvisorDown must filter root cgroup id="/", got: {cadvisor_expr}'
+    )
+    assert "[24h:1m]" not in cadvisor_expr, (
+        f"VpsCadvisorDown must not use [24h:1m], got: {cadvisor_expr}"
+    )
+    assert "timestamp(" in cadvisor_expr and "[24h:5m]" in cadvisor_expr, (
+        f"VpsCadvisorDown must use timestamp() with [24h:5m], got: {cadvisor_expr}"
+    )
+
+    node_expr = rules_by_name["VpsNodeDown"]["expr"]
+    assert "[24h:1m]" not in node_expr, f"VpsNodeDown must not use [24h:1m], got: {node_expr}"
+    assert "timestamp(" in node_expr and "[24h:5m]" in node_expr, (
+        f"VpsNodeDown must use timestamp() with [24h:5m], got: {node_expr}"
+    )
+
     print("All PrometheusRule assertions passed successfully!")
 
 

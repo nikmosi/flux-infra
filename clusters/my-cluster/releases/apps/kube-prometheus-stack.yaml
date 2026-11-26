@@ -292,11 +292,41 @@ spec:
 
     kubeApiServer:
       enabled: true
+      serviceMonitor:
+        metricRelabelings:
+          - action: drop
+            sourceLabels:
+              - __name__
+              - le
+            regex: (etcd_request|apiserver_request_slo|apiserver_request_sli|apiserver_request)_duration_seconds_bucket;(0\.15|0\.2|0\.3|0\.35|0\.4|0\.45|0\.6|0\.7|0\.8|0\.9|1\.25|1\.5|1\.75|2|3|3\.5|4|4\.5|6|7|8|9|15|20|40|45|50)(\.0)?
+          - action: drop
+            sourceLabels:
+              - __name__
+              - le
+            regex: apiserver_watch_events_dispatch_duration_seconds_bucket;(0\.0005|0\.005|0\.025|0\.05|0\.25|0\.5|2\.5)
+          # k3s bundles apiserver, etcd, kubelet, scheduler, kube-proxy into one shared registry.
+          # Drop non-apiserver metrics duplicated on :6443/metrics (kubeEtcd/kubeScheduler/kubeProxy are disabled).
+          - action: drop
+            sourceLabels:
+              - __name__
+            regex: (etcd|kubelet|scheduler|kubeproxy|csi_operations|storage_operation|volume_manager)_.*
 
     kubelet:
       enabled: true
       serviceMonitor:
         cAdvisor: true
+        metricRelabelings:
+          - action: drop
+            sourceLabels:
+              - __name__
+              - le
+            regex: (csi_operations|storage_operation_duration)_seconds_bucket;(0.25|2.5|15|25|120|600)(\.0)?
+          # k3s exposes control-plane metrics on :10250/metrics from the shared binary registry.
+          # Drop them here so they are not scraped twice without apiserver's bucket-drop relabeling.
+          - action: drop
+            sourceLabels:
+              - __name__
+            regex: (apiserver|etcd|scheduler|kubeproxy|apiextensions|aggregator)_.*
 
     kubeControllerManager:
       enabled: false
@@ -403,6 +433,9 @@ spec:
         retention: 14d
         retentionSize: 12GiB
         walCompression: true
+        nodeSelector:
+          kubernetes.io/os: linux
+          kubernetes.io/hostname: acemagic
 
         ruleSelectorNilUsesHelmValues: false
         ruleSelector: {}
@@ -426,11 +459,11 @@ spec:
 
         resources:
           requests:
-            cpu: 100m
-            memory: 512Mi
+            cpu: 250m
+            memory: 1Gi
           limits:
-            cpu: 500m
-            memory: 1536Mi
+            cpu: 2000m
+            memory: 4Gi
 
         storageSpec:
           volumeClaimTemplate:

@@ -13,7 +13,7 @@ spec:
     - name: vps.rules
       rules:
         - alert: VpsNodeDown
-          expr: up{job="prometheus.scrape.node_exporter"} == 0 or (time() - max by (instance) (max_over_time(timestamp(node_uname_info{job="prometheus.scrape.node_exporter"})[24h:1m])) > 120)
+          expr: up{job="prometheus.scrape.node_exporter"} == 0 or (time() - max by (instance) (timestamp(node_uname_info{job="prometheus.scrape.node_exporter"}) or max_over_time(timestamp(node_uname_info{job="prometheus.scrape.node_exporter"})[24h:5m])) > 120)
           for: 1m
           labels:
             severity: critical
@@ -40,7 +40,7 @@ spec:
             description: "Systemd unit docker.service on {{ $labels.instance }} is not in active state."
 
         - alert: VpsCadvisorDown
-          expr: time() - max by (instance) (max_over_time(timestamp(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"vpn-.*"})[24h:1m])) > 120
+          expr: time() - max by (instance) (timestamp(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"vpn-.*", id="/"}) or max_over_time(timestamp(container_last_seen{job="prometheus.scrape.cadvisor", instance=~"vpn-.*", id="/"})[24h:5m])) > 120
           for: 1m
           labels:
             severity: warning
