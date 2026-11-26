@@ -145,10 +145,11 @@ spec:
 
                   echo "==> 2. Disabling automatic saving and flushing chunks to disk via RCON..."
                   kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-off
-                  kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli "save-all flush"
 
-                  # Trap ensures save-on is always re-enabled even if snapshot command fails
+                  # Trap ensures save-on is always re-enabled even if flush or snapshot fails
                   trap 'echo "==> [TRAP] Ensuring automatic saving is re-enabled..."; kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-on || true' EXIT
+
+                  kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli "save-all flush"
 
                   echo "==> 3. Getting Longhorn volume name for minecraft-data PVC..."
                   VOL=$$(kubectl get pvc -n "$${NAMESPACE}" minecraft-data -o jsonpath='{.spec.volumeName}')
@@ -172,7 +173,13 @@ spec:
                     volume: $${VOL}
                   EOF
 
-                  echo "==> 5. Snapshot successfully requested. Re-enabling autosave..."
+                  echo "==> 4b. Waiting for Longhorn Snapshot '$${SNAP_NAME}' to become readyToUse..."
+                  kubectl wait --for=jsonpath='{.status.readyToUse}'=true \
+                    "snapshot.longhorn.io/$${SNAP_NAME}" \
+                    -n "$${LONGHORN_NS}" \
+                    --timeout=120s
+
+                  echo "==> 5. Snapshot is readyToUse. Re-enabling autosave..."
                   kubectl exec -n "$${NAMESPACE}" "$${POD}" -c minecraft -- rcon-cli save-on
                   trap - EXIT
 

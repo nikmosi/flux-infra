@@ -36,6 +36,7 @@ spec:
       annotations:
         kube-score/ignore: "pod-networkpolicy,container-security-context-readonlyrootfilesystem,container-image-tag,container-ephemeral-storage-request-and-limit,container-security-context-user-group-id,statefulset-has-servicename,pod-probes-identical"
     spec:
+      terminationGracePeriodSeconds: 180
       nodeSelector:
         kubernetes.io/hostname: acemagic
       securityContext:
